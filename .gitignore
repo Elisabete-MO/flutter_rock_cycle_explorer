@@ -1,0 +1,148 @@
+# =================================================================
+#  Rock Cycle Explorer — .gitignore
+#  Flutter + Flame Engine | Revisado Tech Lead
+#  Versão: 2.0
+# =================================================================
+
+# -----------------------------------------------------------------
+# FLUTTER / DART / PUB
+# -----------------------------------------------------------------
+# Gerado automaticamente pelo 'flutter pub get'. Contém caminhos locais.
+.flutter-plugins
+# Grafo de dependências. Gerado automaticamente.
+.flutter-plugins-dependencies
+# Cache do pub local.
+.pub/
+# Cache global do pub (quando instalado localmente ao projeto, raro).
+.pub-cache/
+# Ferramenta interna do Dart. Contém locks de versão de ferramentas.
+.dart_tool/
+# API docs gerada — não faz parte do código-fonte.
+**/doc/api/
+# ID do último build do Flutter para iOS — gerado automaticamente.
+**/ios/Flutter/.last_build_id
+# Metadados do projeto Flutter (versão SDK e flags de migração).
+# Ignorado para evitar conflitos em ambientes de CI/CD.
+# .metadata
+# Diretório temporário criado por 'flutter migrate'.
+migrate_working_dir/
+
+# -----------------------------------------------------------------
+# ARTEFATOS DE BUILD
+# -----------------------------------------------------------------
+/build/
+/android/app/debug
+/android/app/profile
+/android/app/release
+/coverage/
+
+# -----------------------------------------------------------------
+# OBFUSCAÇÃO E SIMBOLIZAÇÃO
+# -----------------------------------------------------------------
+app.*.map.json
+app.*.symbols
+
+# -----------------------------------------------------------------
+# IDES E EDITORES
+# -----------------------------------------------------------------
+# IntelliJ IDEA / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code — descomente para ignorar toda a pasta .vscode/.
+# Mantido comentado para permitir versionar extensions.json de equipe.
+#.vscode/
+
+# Vim / Neovim swap files
+*.swp
+*.swo
+
+# Histórico local do editor
+.history
+
+# -----------------------------------------------------------------
+# SISTEMA OPERACIONAL
+# -----------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# -----------------------------------------------------------------
+# CONTROLE DE VERSÃO LEGADO
+# -----------------------------------------------------------------
+.svn/
+.atom/
+.build/
+.buildlog/
+
+# -----------------------------------------------------------------
+# LINGUAGENS — RESÍDUOS DE FERRAMENTAS
+# -----------------------------------------------------------------
+*.pyc
+__pycache__/
+*.class
+
+# -----------------------------------------------------------------
+
+# SWIFT / XCODE (targets macOS e iOS)
+# -----------------------------------------------------------------
+.swiftpm/
+
+# -----------------------------------------------------------------
+# SEGURANÇA — CREDENCIAIS E VARIÁVEIS DE AMBIENTE
+# ⚠️  NUNCA commite estes arquivos no Git!
+# -----------------------------------------------------------------
+.env
+.env.*
+*.env
+*.env.local
+
+# Firebase — descomente se o Firebase for integrado:
+# google-services.json
+# GoogleService-Info.plist
+
+# Keystores e certificados de assinatura Android (cobertos também
+# pelo android/.gitignore, mas explícito aqui por segurança):
+# key.properties
+# **/*.jks
+# **/*.keystore
+
+# -----------------------------------------------------------------
+# FLAME ENGINE / ASSETS DO JOGO
+# =================================================================
+# ✅ INTENCIONALMENTE NÃO IGNORADOS — DEVEM SER VERSIONADOS:
+#    assets/sprites/
+#    assets/audio/
+#    assets/maps/  (.tmx do Tiled)
+#    assets/fonts/
+#    assets/shaders/
+#
+# ⚠️  NUNCA adicione *.png, *.tmx, *.ogg, *.wav, *.mp3, *.ttf,
+#    *.frag, *.vert a este arquivo. Isso removeria assets do repositório.
+# -----------------------------------------------------------------
+
+# Dados de sessão local do editor Tiled (posição de câmera, janelas abertas)
+*.tiled-session
+.tiled/
+
+# -----------------------------------------------------------------
+# CI/CD E FERRAMENTAS DE BUILD
+# -----------------------------------------------------------------
+reports/
+test-results/
+node_modules/
+*.log
+.tmp/
+tmp/
