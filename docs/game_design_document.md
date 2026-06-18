@@ -1,163 +1,136 @@
 # Rock Cycle Explorer - GDD Revisado & Arquitetura Técnica (MVP 1 Semana)
 
-Este documento foi reestruturado sob a perspectiva de um Tech Lead e Game Designer Sênior para garantir a entrega de um MVP (Mínimo Produto Viável) jogável e divertido dentro do prazo estrito de **1 semana**, utilizando a **Flame Engine** integrada ao **Flutter**.
+Este documento reflete a visão oficial do jogo, focada em entregar um MVP jogável e divertido dentro do prazo estrito de **1 semana**, utilizando a **Flame Engine** integrada ao **Flutter**. O foco é criar um RPG leve de exploração geológica.
 
 ---
 
-## 1. Análise Crítica e Gestão de Riscos
+## 1. Visão Geral e Premissa
 
-O escopo inicial assemelhava-se mais a um aplicativo de formulários do que a um jogo. Para transformá-lo em uma experiência lúdica em apenas 1 semana, identificamos os seguintes riscos e alternativas:
+Uma ilha apresenta formações geológicas incomuns. Uma expedição científica é enviada para investigar. O jogador controla a geóloga **Dra. Sophia**, enviada a campo para investigar esses fenômenos. O objetivo é coletar evidências, analisar amostras na base e ajudar a compreender os fenômenos da ilha.
 
-| Recurso Original | Fator de Risco | Decisão de Design para o MVP |
-| :--- | :--- | :--- |
-| **Múltiplos Biomas/Mapas** | Altíssimo (carregamento, level design, assets de tilesets separados). | **Mapa Único Contínuo**: Uma única tela de exploração dividida em 3 zonas visuais (Vulcão, Cânion, Caverna). |
-| **Laboratório como outra Tela** | Alto (quebra o fluxo do jogo, exige transição complexa de estados). | **Laboratório de Campo**: A análise ocorre *in-game* via overlay do Flutter assim que a rocha é inspecionada. |
-| **Enciclopédia Completa** | Médio (excesso de UI estática desnecessária para testar a diversão). | **Caderno de Campo Simples**: Um painel compacto acessível a partir do HUD do jogo. |
-| **Combate ou Movimentos Avançados** | Alto (física complexa, animações difíceis no Flame). | **Movimentação 2D Top-Down Simples**: Controle direcional (WASD/Setas ou Joystick Virtual) e colisão básica (AABB). |
+**Personagem Principal:** Dra. Sophia (Geóloga de campo).
+**NPC Principal:** Dra. Terra (Líder da expedição científica, orienta missões e valida descobertas).
 
 ---
 
-## 2. GDD Revisado: O Jogo
+## 2. Loop Oficial de Gameplay
 
-### Conceito
-Um jogo de exploração 2D top-down onde o jogador controla a geóloga **Dra. Sophia** em uma ilha vulcânica ativa. O objetivo é coletar amostras de rochas direto no campo, classificá-las de acordo com as pistas geológicas e entregá-las para a líder da expedição (**Dra. Terra**) para completar a quest de mapeamento da ilha.
+O jogo não é um questionário disfarçado. O aprendizado é consequência da progressão em um fluxo científico natural:
 
-### Loop de Gameplay Simplificado (Flame-First)
-1.  **Explorar:** Caminhar pelo mapa usando o teclado ou joystick virtual.
-2.  **Identificar:** Encontrar nós de rocha cintilantes espalhados pelas três zonas do mapa.
-3.  **Classificar (Desafio):** Interagir com a rocha. Abre-se um pop-up (Overlay Flutter) mostrando pistas visuais/textuais da rocha. O jogador escolhe se é Ígnea, Sedimentar ou Metamórfica.
-4.  **Entregar:** Levar as rochas corretas para a Dra. Terra (NPC na base) para concluir a quest e vencer o jogo.
+1. **Exploração:** Caminhar pelo mapa.
+2. **Coleta de Evidências:** Encontrar rochas e coletar amostras no ambiente.
+3. **Retorno à Base Científica:** Voltar ao hub principal da expedição.
+4. **Análise Científica:** Procedimento de observação de propriedades na base.
+5. **Registro da Descoberta:** Adição ao diário/caderno de campo.
+6. **XP / Progressão:** Ganho de níveis, títulos e reconhecimento.
+7. **Nova Missão:** Receber o próximo objetivo.
 
 ---
 
-## 3. Arquitetura Técnica (Flutter + Flame)
+## 3. Estrutura das Fases
 
-A melhor prática no desenvolvimento com Flame é utilizar o motor para a renderização do mundo do jogo (Canvas, sprites, colisões, física) e o Flutter para a interface do usuário (HUD, diálogos, quizzes de classificação) por meio de **Overlays**.
+### Fase 1 — Exploração
+O jogador explora ambientes contínuos (Vulcão, Cânion, Caverna, Montanha). O objetivo é encontrar rochas e coletar amostras.
+*Nota de Design: A análise NÃO ocorre durante a exploração.*
+
+### Fase 2 — Retorno à Base
+Após a coleta, o jogador retorna à base científica. A base funciona como o hub principal do jogo, onde ocorre o diálogo com NPCs, a entrega de amostras, o progresso da narrativa e o início da análise científica.
+
+### Fase 3 — Análise Científica
+Realizada na base, simulando um procedimento científico (observar cristais, camadas, cor, textura). O jogador utiliza as evidências coletadas para identificar a rocha. A mecânica se assemelha a uma ferramenta analítica do universo do jogo, garantindo a imersão.
+
+### Fase 4 — Registro
+Ao identificar corretamente a rocha, ela é registrada no caderno de campo da expedição e XP é concedido.
+
+### Fase 5 — Progressão
+O jogador recebe XP, avança de níveis e ganha títulos de reconhecimento científico, reforçando a fantasia de ser um geólogo explorador.
+
+---
+
+## 4. Arquitetura Técnica (Flutter + Flame)
+
+O Flame cuida do mundo do jogo (Canvas, sprites, colisões, física), enquanto o Flutter gerencia a interface do usuário (HUD, diálogos, telas de análise e caderno de campo) usando **Overlays**.
 
 ```mermaid
 graph TD
     A[Flutter MaterialApp / GameWidget] --> B[FlameGame Instance]
     A --> C[Flutter Overlays]
-    B -->|Eventos de Colisão / Ação| C
-    C -->|Atualiza Estado / Fecha Quiz| B
+    B -->|Eventos de Coleta/Retorno| C
+    C -->|Atualiza Estado / Fecha Análise| B
     B --> D[GeologistPlayer Component]
     B --> E[RockComponent Components]
     B --> F[NpcComponent Component]
     B --> G[Collision Boundaries]
-    C --> H[HUD Overlay: Quest & Inventário]
-    C --> I[Quiz/Classification Overlay]
-    C --> J[Dialogue Overlay]
+    C --> H[HUD Overlay: Missão, XP & Inventário]
+    C --> I[Analysis Overlay: Procedimento Científico]
+    C --> J[Dialogue Overlay: Dra. Terra]
 ```
-
-### Componentes Flame Principais
-1.  `RockCycleGame` (extends `FlameGame` com `HasCollisionDetection` e `HasKeyboardHandlerComponents`): A classe central do ciclo de vida do jogo.
-2.  `GeologistPlayer` (extends `SpriteAnimationComponent` com `CollisionCallbacks`, `KeyboardHandler`): O jogador, com animação de caminhada em 4 direções e caixa de colisão.
-3.  `RockComponent` (extends `SpriteComponent` com `CollisionCallbacks`): Representa os nós de minério no cenário. Possui uma propriedade com o ID da rocha.
-4.  `NpcComponent` (extends `SpriteComponent` com `CollisionCallbacks`): A Dra. Terra, posicionada perto do ponto inicial.
-5.  `ObstacleComponent` (extends `PositionComponent` com `CollisionCallbacks`): Blocos invisíveis para delimitar as paredes do mapa e impedir que o jogador saia dos limites.
-
-### Gerenciamento de Estado
-*   Utilizaremos uma classe simples de estado (`GameState`) que estende `ChangeNotifier`.
-*   Esta classe será compartilhada entre o Flame e os Overlays Flutter para rastrear:
-    *   Inventário de rochas classificadas com sucesso.
-    *   Quest ativa e progresso (ex: "Coletou 1/2 rochas ígneas").
-    *   Nível/XP de geólogo do jogador.
 
 ---
 
-## 4. Estrutura de Pastas Sugerida
-
-A estrutura abaixo separa a lógica do jogo (Flame), os modelos de dados e a interface visual de suporte (Flutter Overlays).
+## 5. Estrutura de Pastas Sugerida
 
 ```
 lib/
-├── main.dart                     # Inicialização do MaterialApp e do GameWidget com overlays
+├── main.dart
 ├── game/
-│   ├── rock_cycle_game.dart      # Classe principal do Flame Game loop
+│   ├── rock_cycle_game.dart
 │   ├── components/
-│   │   ├── player.dart           # Componente do Jogador (Dra. Sophia)
-│   │   ├── rock.dart             # Componentes das rochas coletáveis
-│   │   ├── npc.dart              # Componente da Dra. Terra (NPC de Quests)
-│   │   └── obstacle.dart         # Componente de colisão de borda/obstáculos
+│   │   ├── player.dart           # Dra. Sophia
+│   │   ├── rock.dart             # Amostras interativas (coleta)
+│   │   ├── npc.dart              # Dra. Terra (Base)
+│   │   └── obstacle.dart
 │   └── helpers/
-│       ├── constants.dart        # Configurações de tamanhos, velocidades e cores
-│       └── asset_loader.dart     # Gerenciamento de carregamento de sprites/imagens
+│       ├── constants.dart
+│       └── asset_loader.dart
 ├── models/
-│   ├── rock_model.dart           # Modelo de dados da rocha (pistas, tipo, imagem)
-│   ├── quest_model.dart          # Modelo de dados da missão ativa
-│   └── game_state.dart           # Estado reativo do jogo (ChangeNotifier)
+│   ├── rock_model.dart           # Dados da rocha (cristais, camadas, cor)
+│   ├── quest_model.dart          # Missão ativa e progresso
+│   └── game_state.dart           # XP, nível, inventário
 └── widgets/
-    ├── hud_overlay.dart          # Barra de topo com inventário rápido e quests
+    ├── hud_overlay.dart          # XP, nível e bússola/mochila
     ├── dialogue_overlay.dart     # Painel de conversação com NPCs
-    ├── quiz_overlay.dart         # Janela de análise e classificação científica
-    └── victory_overlay.dart      # Tela de encerramento acadêmico (Badge de Geólogo)
+    ├── analysis_overlay.dart     # Ferramenta científica (Base)
+    └── field_book_overlay.dart   # Caderno de campo e registros
 ```
 
 ---
 
-## 5. Backlog do MVP (1 Semana)
+## 6. Backlog do MVP (1 Semana)
 
 ### 🔴 Essencial (Must Have - MVP Jogável)
-*   [ ] Configurar projeto com Flutter + Flame + pacotes adicionais.
-*   [ ] Criar modelos de dados (`RockModel`, `GameState`).
-*   [ ] Implementar jogador com movimentação 4 direções (teclado/virtual joystick) e colisão básica.
-*   [ ] Desenhar o mapa contínuo com 3 biomas básicos (usando formas simples/sprites de cores diferentes para separar vulcão, rio e caverna).
-*   [ ] Componente de rochas interativas que detectam colisão com o jogador.
-*   [ ] Overlay do Flutter para o minijogo de classificação (Quiz) quando o jogador tocar em uma rocha.
-*   [ ] NPC de quest básico que verifica se o jogador coletou o que foi pedido e aciona a tela de vitória.
-*   [ ] Tela de vitória.
+*   [ ] Configurar projeto com Flutter + Flame.
+*   [ ] Criar modelos de dados (`RockModel`, `GameState` com XP e missões).
+*   [ ] Movimentação (teclado/joystick virtual) e colisão básica.
+*   [ ] Desenhar mapa contínuo com biomas (Vulcão, Cânion, Caverna, Montanha) e Base.
+*   [ ] Componentes de Rochas interativos (apenas coleta para inventário).
+*   [ ] NPC Dra. Terra na base para iniciar diálogos e análises.
+*   [ ] Overlay de Análise Científica (acionado na base após coleta).
+*   [ ] Sistema de Registro (Caderno de Campo) e Progressão (XP).
 
-### 🟡 Desejável (Should Have - Polimento para Apresentação)
-*   [ ] Sprites animados para o jogador (caminhada).
-*   [ ] Efeito de partícula (cintilação) nas rochas que precisam ser coletadas.
-*   [ ] Efeitos sonoros básicos de clique, acerto no quiz e conclusão de quest.
-*   [ ] Painel de "Caderno de Campo" (Encyclopedia) compacto no HUD para ver detalhes das rochas já classificadas.
+### 🟡 Desejável (Should Have - Polimento)
+*   [ ] Sprites animados para a personagem.
+*   [ ] Efeitos sonoros básicos de passos, coleta, e sucesso na análise.
+*   [ ] Efeito de partícula ao coletar a amostra.
 
 ### 🟢 Futuro (Nice to Have - Expansão Pós-Apresentação)
-*   [ ] Integração com mapas complexos vindos do Tiled (.tmx).
-*   [ ] Minijogo físico de quebra de rocha usando física do Flame/Forge2D.
-*   [ ] Ciclo de metamorfismo interativo (levar uma rocha sedimentar até a zona de pressão/calor para transformá-la).
-*   [ ] Ciclo dia/noite ou efeitos climáticos dinâmicos.
+*   [ ] Integração com mapas Tiled (.tmx).
+*   [ ] Ciclo de metamorfismo interativo visual.
 
 ---
 
-## 6. Cronograma Realista de 7 Dias
-
-Este cronograma foi projetado para garantir que você tenha um **protótipo funcional todos os dias** para apresentar ao seu orientador acadêmico.
+## 7. Cronograma Realista de 7 Dias
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │             CRONOGRAMA DE 7 DIAS (FLAME + FLUTTER)     │
 ├───────┬────────────────────────────────────────────────┤
 │ Dia 1 │ Setup do Flame, Models e Player na Tela        │
-│ Dia 2 │ Movimentação, Colisões e Obstáculos do Mapa    │
-│ Dia 3 │ Spawners de Rochas e NPC Interativo            │
-│ Dia 4 │ Integração de Overlays (HUD e Balão de Fala)   │
-│ Dia 5 │ Minijogo de Classificação (Overlay Quiz)       │
-│ Dia 6 │ Sistema de Quests e Vitória (Progresso Completo)│
+│ Dia 2 │ Movimentação, Colisões e Biomas do Mapa        │
+│ Dia 3 │ Spawners de Rochas (Coleta) e NPC na Base      │
+│ Dia 4 │ Overlays de HUD (XP/Missões) e Diálogo         │
+│ Dia 5 │ Sistema de Análise Científica (Overlay na Base)│
+│ Dia 6 │ Registro (Caderno) e Progressão de Nível       │
 │ Dia 7 │ Polimento Visual, Testes e Correções Finais    │
 └───────┴────────────────────────────────────────────────┘
 ```
-
-### Detalhamento Diário
-
-*   **Dia 1: Fundação do Game Loop**
-    *   *Objetivo:* Instalar o Flame, configurar a `RockCycleGame` classe e desenhar a Dra. Sophia parada na tela.
-    *   *Resultado jogável do dia:* Uma janela preta com um sprite/quadrado no centro representando o jogador.
-*   **Dia 2: Movimentação e Barreiras**
-    *   *Objetivo:* Adicionar a lógica de input de teclado/joystick virtual e colisores invisíveis para delimitar as áreas (vulcão, canyon, montanhas).
-    *   *Resultado jogável do dia:* O jogador agora caminha pela tela e é bloqueado pelas bordas.
-*   **Dia 3: Povoando o Mundo**
-    *   *Objetivo:* Adicionar os componentes de Rocha (`RockComponent`) e a Dra. Terra (`NpcComponent`) no mapa, configurando suas caixas de colisão.
-    *   *Resultado jogável do dia:* O jogador pode andar e encostar nas rochas e no NPC, disparando logs no console (`print('Colidiu com Rocha X')`).
-*   **Dia 4: HUD e Comunicação (Overlays)**
-    *   *Objetivo:* Criar o `hud_overlay.dart` (para mostrar a mochila e quests) e o `dialogue_overlay.dart` (para mostrar o texto da Dra. Terra).
-    *   *Resultado jogável do dia:* Ao encostar no NPC, a conversa abre em um balão de diálogo elegante do Flutter.
-*   **Dia 5: O Laboratório de Classificação**
-    *   *Objetivo:* Desenvolver o `quiz_overlay.dart`. Quando o jogador colidir com uma rocha e pressionar interagir, abre o quiz com as propriedades/dicas e as opções para escolher a categoria.
-    *   *Resultado jogável do dia:* Ciclo completo de coleta e resposta. Ao responder corretamente, a rocha some do mapa e vai para o inventário.
-*   **Dia 6: O Ciclo Completo (Quests + Vitória)**
-    *   *Objetivo:* Integrar o `GameState` com o NPC para que ela reconheça o progresso da missão. Desenvolver o overlay de vitória.
-    *   *Resultado jogável do dia:* O jogo agora tem início, meio e fim. O jogador coleta as rochas corretas, entrega ao NPC e vence o jogo.
-*   **Dia 7: Polimento e Entrega**
-    *   *Objetivo:* Ajustar a paleta de cores das zonas, adicionar efeitos de transição simples, revisar ortografia das dicas didáticas e compilar para web/Linux para entrega acadêmica.
