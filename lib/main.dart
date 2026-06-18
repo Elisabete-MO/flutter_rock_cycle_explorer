@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'game/rock_cycle_game.dart';
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 void main() {

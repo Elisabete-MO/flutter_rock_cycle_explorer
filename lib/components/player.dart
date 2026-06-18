@@ -1,7 +1,12 @@
+import 'dart:math' as math;
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
 import 'package:flame/palette.dart';
 import 'package:flutter/services.dart';
+
+import '../game/rock_cycle_game.dart';
+import 'npc_component.dart';
+import 'rock_component.dart';
 
 /// Dra. Sophia — componente do jogador (MVP placeholder visual).
 ///
@@ -9,7 +14,7 @@ import 'package:flutter/services.dart';
 ///  - Renderização como quadrado azul.
 ///  - Movimentação suave com WASD e teclas direcionais.
 ///  - Contenção dentro dos limites visíveis do jogo.
-class Player extends RectangleComponent with KeyboardHandler, HasGameRef {
+class Player extends RectangleComponent with KeyboardHandler, HasGameReference<RockCycleGame>, CollisionCallbacks {
   // ── Configuração ─────────────────────────────────────────────────────────
   static const double _speed = 200.0; // pixels por segundo
 
@@ -27,6 +32,26 @@ class Player extends RectangleComponent with KeyboardHandler, HasGameRef {
         );
 
   // ── Ciclo de vida ─────────────────────────────────────────────────────────
+
+  @override
+  Future<void> onLoad() async {
+    // Adiciona o hitbox para permitir colisões
+    add(RectangleHitbox());
+  }
+
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+
+    if (other is RockComponent) {
+      // ignore: avoid_print
+      print('Colidiu com ${other.rockName}');
+    } else if (other is NpcComponent) {
+      // ignore: avoid_print
+      print('Olá Geóloga!');
+    }
+  }
 
   @override
   void update(double dt) {
@@ -49,9 +74,9 @@ class Player extends RectangleComponent with KeyboardHandler, HasGameRef {
     final canvas = game.canvasSize;
 
     final minX = halfW;
-    final maxX = (canvas.x - halfW).clamp(minX, double.infinity);
+    final maxX = math.max(minX, canvas.x - halfW);
     final minY = halfH;
-    final maxY = (canvas.y - halfH).clamp(minY, double.infinity);
+    final maxY = math.max(minY, canvas.y - halfH);
 
     position.x = position.x.clamp(minX, maxX);
     position.y = position.y.clamp(minY, maxY);
