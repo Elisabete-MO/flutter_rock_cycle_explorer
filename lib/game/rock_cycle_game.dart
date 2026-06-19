@@ -43,6 +43,9 @@ class RockCycleGame extends FlameGame
     player = Player()..position = size / 2;
 
     add(player);
+
+    // Ativa o HUD automaticamente quando o jogo inicia.
+    showHud();
   }
 
   // ── Gerenciamento de Overlays ───────────────────────────────────────────────
