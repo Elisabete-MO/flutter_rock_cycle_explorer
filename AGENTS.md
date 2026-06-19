@@ -79,3 +79,7 @@ Rock definitions:
 -   Do not hardcode quest logic inside UI
 -   Do not create new rock types without RockModel entry
 -   Do not mix rendering logic with progression logic
+
+CRITICAL:
+Only read files explicitly required for the current task.
+Do not scan or load the full repository unless asked.
