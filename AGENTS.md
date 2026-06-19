@@ -1,64 +1,81 @@
-# Rock Cycle Explorer
 
-**Generated:** 2026-06-18
-**Stack:** Flutter + Flame Engine (Dart)
+# 🪨 Rock Cycle Explorer — AGENTS.md (Optimized)
 
-## OVERVIEW
+## STACK
 
-Educational RPG 2D top-down game teaching rock cycle classification. Player explores, collects rock samples, classifies them via quiz, and completes quests for XP.
+Flutter + Flame (Dart)
 
-## STRUCTURE
+## PURPOSE
 
-```
-lib/
-├── main.dart               # Entry: GameWidget wrapping RockCycleGame
-├── game/
-│   └── rock_cycle_game.dart  # FlameGame loop (onLoad, update)
-├── components/               # Flame entities (Player, Rocks, NPCs)
-│   ├── player.dart
-│   ├── rock_component.dart
-│   └── npc_component.dart
-└── models/                   # Data layer (ChangeNotifier state + rock DB)
-    ├── game_state.dart
-    └── rock_model.dart
-```
+2D educational RPG where players explore environments, collect rock samples, classify them, and progress via XP-based quests.
 
-## WHERE TO LOOK
+----------
 
-| Task                            | Location                                                               |
-| ------------------------------- | ---------------------------------------------------------------------- |
-| Add new rock type               | `lib/models/rock_model.dart` → add to `defaultRocks`                   |
-| Add new quest logic             | `lib/models/game_state.dart` → `_checkQuestProgress()`                 |
-| Change player movement/speed    | `lib/components/player.dart` → `_speed`, `_updateVelocity`             |
-| Add new game entity             | `lib/components/` → extend `RectangleComponent` or `PositionComponent` |
-| Modify game loop / add overlay  | `lib/main.dart` + `lib/game/rock_cycle_game.dart`                      |
-| Change UI (HUD, quiz, dialogue) | Create `lib/widgets/` → Flutter Overlay widgets (MVP has none yet)     |
+## CORE ARCHITECTURE
 
-## CODE MAP
+-   `FlameGame` handles world simulation
+-   Flutter handles UI overlays (HUD, dialogue, quiz)
+-   `GameState (ChangeNotifier)` manages:
+    -   XP / Level
+    -   Inventory (collected rocks)
+    -   Quest state
+-   `RockModel` is the source of truth for all rock data
 
-| Symbol          | Kind     | File                                   | Role                                                                     |
-| --------------- | -------- | -------------------------------------- | ------------------------------------------------------------------------ |
-| `main()`        | function | `lib/main.dart:6`                      | Entry: wraps `RockCycleGame` in `GameWidget`                             |
-| `RockCycleGame` | class    | `lib/game/rock_cycle_game.dart:13`     | `FlameGame` with `HasKeyboardHandlerComponents`, `HasCollisionDetection` |
-| `Player`        | class    | `lib/components/player.dart:17`        | Blue square, WASD/arrow movement, collision callbacks                    |
-| `RockComponent` | class    | `lib/components/rock_component.dart:5` | Gray square, hitbox for collision                                        |
-| `NpcComponent`  | class    | `lib/components/npc_component.dart:5`  | Green square, hitbox for collision                                       |
-| `GameState`     | class    | `lib/models/game_state.dart:4`         | `ChangeNotifier`: XP, level, inventory, quest progress                   |
-| `RockModel`     | class    | `lib/models/rock_model.dart:18`        | Rock data (id, name, type, clues, sprite)                                |
-| `RockType`      | enum     | `lib/models/rock_model.dart:1`         | `igneous`, `sedimentary`, `metamorphic`                                  |
+----------
 
-## CONVENTIONS
+## GAME LOOP
 
-- **Portuguese UI strings** — all user-facing text in Brazilian Portuguese
-- **ChangeNotifier for state** — `GameState` extends `ChangeNotifier`, Flutter widgets listen
-- **MVP placeholders** — colored `RectangleComponent` (Player=blue, NPC=green, Rock=gray)
-- **Anchor.center** — all components use `Anchor.center` for positioning
-- **Flame + Flutter hybrid** — Flame renders game world; Flutter Overlays handle quiz/HUD UI
-- **Analysis** — `package:flutter_lints/flutter.yaml` (standard Flutter lint set)
+Explore → Collect Rock → Return to Base → Analyze → Register → Gain XP → Next Quest
 
-## ANTI-PATTERNS (THIS PROJECT)
+----------
 
-- **Do NOT** mix game logic in widgets or UI logic in components
-- **Do NOT** use `print()` in production code (MVP uses it for debug only; replace with logger)
-- **Do NOT** add rocks without corresponding `RockModel` entry and `RockComponent`
-- **Do NOT** hardcode positions in `onLoad()` — move to a map/level data structure when adding biomes
+## KEY FILES
+
+-   `main.dart` → Game bootstrap (GameWidget)
+-   `rock_cycle_game.dart` → Flame game loop
+-   `player.dart` → movement + collisions
+-   `rock_component.dart` → collectible rocks
+-   `npc_component.dart` → base interactions
+-   `game_state.dart` → XP, quests, inventory
+-   `rock_model.dart` → rock database
+
+----------
+
+## RULES
+
+-   All gameplay state must live in `GameState`
+-   All rock definitions must exist in `RockModel`
+-   UI must never contain game logic
+-   Flame components must not manage progression logic
+-   Flutter overlays must not modify world state directly (only via GameState)
+
+----------
+
+## DATA RULES
+
+Rock definitions:
+
+-   id (unique)
+-   name
+-   type (igneous / sedimentary / metamorphic)
+-   clues (used in analysis UI)
+-   sprite reference
+
+----------
+
+## GAME CONSTRAINTS (MVP)
+
+-   No procedural generation
+-   No persistent save system
+-   No external APIs
+-   No dynamic level loading
+-   No complex AI behavior
+
+----------
+
+## ANTI-PATTERNS
+
+-   Do not duplicate logic between GameState and components
+-   Do not hardcode quest logic inside UI
+-   Do not create new rock types without RockModel entry
+-   Do not mix rendering logic with progression logic
