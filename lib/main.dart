@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'game/rock_cycle_game.dart';
 import 'models/game_state.dart';
+import 'widgets/dialogue_overlay.dart';
+import 'widgets/hud_overlay.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
@@ -22,18 +24,14 @@ void main() {
   runApp(
     GameWidget(
       game: RockCycleGame(gameState: gameState),
-      // Registra as factories de overlay. Os overlays reais (HUD, Diálogo)
-      // serão implementados no Dia 4 — por enquanto usamos placeholders vazios
-      // que garantem que a infraestrutura de overlay funciona sem erros.
+      // Registra as factories de overlay. Cada overlay recebe o gameState
+      // diretamente para acessar dados de progressão do jogador.
       overlayBuilderMap: {
-        'hud': (context, game) {
-          // TODO(Dia 4): Substituir por HudOverlay(gameState: gameState)
-          return const SizedBox.shrink();
-        },
-        'dialogue': (context, game) {
-          // TODO(Dia 4): Substituir por DialogueOverlay(gameState: gameState)
-          return const SizedBox.shrink();
-        },
+        'hud': (context, game) => HudOverlay(gameState: gameState),
+        'dialogue': (context, game) => DialogueOverlay(
+          gameState: gameState,
+          game: game as RockCycleGame,
+        ),
       },
     ),
   );
