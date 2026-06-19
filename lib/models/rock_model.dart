@@ -6,11 +6,11 @@ enum RockType {
   String get displayName {
     switch (this) {
       case RockType.igneous:
-        return 'Ígnea';
+        return 'Ignea';
       case RockType.sedimentary:
         return 'Sedimentar';
       case RockType.metamorphic:
-        return 'Metamórfica';
+        return 'Metamorfica';
     }
   }
 }

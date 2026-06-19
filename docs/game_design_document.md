@@ -62,7 +62,7 @@ graph TD
     B --> F[NpcComponent Component]
     B --> G[Collision Boundaries]
     C --> H[HUD Overlay: Missão, XP & Inventário]
-    C --> I[Analysis Overlay: Procedimento Científico]
+    C --> I[Field Lab Overlay: Procedimento Científico]
     C --> J[Dialogue Overlay: Dra. Terra]
 ```
 
@@ -90,7 +90,7 @@ lib/
 └── widgets/
     ├── hud_overlay.dart          # XP, nível e bússola/mochila
     ├── dialogue_overlay.dart     # Painel de conversação com NPCs
-    ├── analysis_overlay.dart     # Ferramenta científica (Base)
+    ├── field_lab_overlay.dart    # Ferramenta científica (Base)
     └── field_book_overlay.dart   # Caderno de campo e registros
 ```
 
