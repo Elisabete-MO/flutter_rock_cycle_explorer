@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'rock_model.dart';
 
 class GameState extends ChangeNotifier {
+  // ── Inventário e Progressão (Dias 1-3) ──────────────────────────────────────
   final List<RockModel> _collectedRocks = [];
   int _xp = 0;
   int _level = 1;
@@ -15,6 +16,45 @@ class GameState extends ChangeNotifier {
   String? get activeQuest => _activeQuest;
   bool get isQuestCompleted => _isQuestCompleted;
   bool get gameWon => _gameWon;
+
+  // ── Estado de Diálogo (Dia 4+) ───────────────────────────────────────────────
+  List<String> _dialogueLines = [];
+  int _currentDialogueIndex = 0;
+  bool _isDialogueActive = false;
+
+  List<String> get dialogueLines => List.unmodifiable(_dialogueLines);
+  int get currentDialogueIndex => _currentDialogueIndex;
+  bool get isDialogueActive => _isDialogueActive;
+
+  /// Linha de diálogo atual, ou `null` se nenhum diálogo estiver ativo.
+  String? get currentDialogueLine {
+    if (!_isDialogueActive || _dialogueLines.isEmpty) return null;
+    return _dialogueLines[_currentDialogueIndex];
+  }
+
+  /// Inicia um novo diálogo com a lista de falas fornecida.
+  void startDialogue(List<String> lines) {
+    _dialogueLines = List.from(lines);
+    _currentDialogueIndex = 0;
+    _isDialogueActive = true;
+    notifyListeners();
+  }
+
+  /// Avança para a próxima fala do diálogo ativo.
+  void advanceDialogue() {
+    if (_currentDialogueIndex < _dialogueLines.length - 1) {
+      _currentDialogueIndex++;
+      notifyListeners();
+    }
+  }
+
+  /// Finaliza o diálogo ativo e limpa o estado.
+  void endDialogue() {
+    _isDialogueActive = false;
+    _dialogueLines = [];
+    _currentDialogueIndex = 0;
+    notifyListeners();
+  }
 
   /// Adiciona uma rocha coletada e classificada com sucesso
   void collectRock(RockModel rock) {

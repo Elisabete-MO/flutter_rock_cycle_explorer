@@ -5,8 +5,6 @@ import 'package:flame/palette.dart';
 import 'package:flutter/services.dart';
 
 import '../game/rock_cycle_game.dart';
-import 'npc_component.dart';
-import 'rock_component.dart';
 
 /// Dra. Sophia — componente do jogador (MVP placeholder visual).
 ///
@@ -44,13 +42,9 @@ class Player extends RectangleComponent with KeyboardHandler, HasGameReference<R
       Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(intersectionPoints, other);
 
-    if (other is RockComponent) {
-      // ignore: avoid_print
-      print('Colidiu com ${other.rockName}');
-    } else if (other is NpcComponent) {
-      // ignore: avoid_print
-      print('Olá Geóloga!');
-    }
+    // Delega a decisão ao game, que centraliza a lógica de interação.
+    // O Player não precisa mais conhecer os tipos concretos dos componentes.
+    game.onPlayerCollided(other);
   }
 
   @override

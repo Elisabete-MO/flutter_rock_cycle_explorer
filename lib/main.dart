@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'game/rock_cycle_game.dart';
+import 'models/game_state.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
@@ -14,9 +15,26 @@ void main() {
     return true;
   };
 
+  // Instância única do estado global do jogo.
+  // Injetada tanto no RockCycleGame quanto nos overlays Flutter.
+  final gameState = GameState();
+
   runApp(
     GameWidget(
-      game: RockCycleGame(),
+      game: RockCycleGame(gameState: gameState),
+      // Registra as factories de overlay. Os overlays reais (HUD, Diálogo)
+      // serão implementados no Dia 4 — por enquanto usamos placeholders vazios
+      // que garantem que a infraestrutura de overlay funciona sem erros.
+      overlayBuilderMap: {
+        'hud': (context, game) {
+          // TODO(Dia 4): Substituir por HudOverlay(gameState: gameState)
+          return const SizedBox.shrink();
+        },
+        'dialogue': (context, game) {
+          // TODO(Dia 4): Substituir por DialogueOverlay(gameState: gameState)
+          return const SizedBox.shrink();
+        },
+      },
     ),
   );
 }
