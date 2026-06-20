@@ -104,7 +104,6 @@ class RockCycleGame extends FlameGame
     }
 
     gameState.registerFieldSample(model);
-    gameState.startAnalysis(model);
 
     // Remove a rocha do mundo para que não possa ser coletada novamente
     // e para sinalizar visualmente que foi coletada.
