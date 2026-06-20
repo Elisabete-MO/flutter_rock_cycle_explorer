@@ -72,7 +72,19 @@ class RockCycleGame extends FlameGame
   void showDialogue() => overlays.add('dialogue');
 
   /// Desativa o overlay de diálogo.
-  void hideDialogue() => overlays.remove('dialogue');
+  /// Se houver amostras pendentes de análise, abre o AnalysisOverlay.
+  void hideDialogue() {
+    overlays.remove('dialogue');
+    if (gameState.fieldSamples.isNotEmpty) {
+      showAnalysisOverlay();
+    }
+  }
+
+  /// Ativa o overlay de análise científica (AnalysisOverlay).
+  void showAnalysisOverlay() => overlays.add('analysis');
+
+  /// Desativa o overlay de análise científica.
+  void hideAnalysisOverlay() => overlays.remove('analysis');
 
   // ── Sistema Centralizado de Interações ──────────────────────────────────────
 
@@ -88,7 +100,13 @@ class RockCycleGame extends FlameGame
   }
 
   void _handleNpcContact(NpcComponent npc) {
-    gameState.startDialogue(npc.dialogueLines);
+    final List<String> lines;
+    if (gameState.fieldSamples.isNotEmpty) {
+      lines = NpcComponent.draTerraAnalysisDialogue;
+    } else {
+      lines = npc.dialogueLines;
+    }
+    gameState.startDialogue(lines);
     showDialogue();
   }
 

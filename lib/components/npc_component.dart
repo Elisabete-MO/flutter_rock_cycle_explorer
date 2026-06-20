@@ -19,6 +19,18 @@ class NpcComponent extends RectangleComponent {
     'Sua primeira missão: vá até o Vulcão e encontre Basalto!',
   ];
 
+  /// Diálogo quando o jogador retorna ao laboratório com amostras coletadas.
+  static const List<String> draTerraAnalysisDialogue = [
+    'Ótimas amostras, Dra. Sophia! Vamos analisá-las no laboratório.',
+    'Selecione uma amostra para começarmos a classificação.',
+  ];
+
+  /// Diálogo quando o jogador não tem amostras (pós-missão inicial).
+  static const List<String> draTerraNoSamplesDialogue = [
+    'Ainda não há amostras para analisar.',
+    'Explore a ilha e colete rochas nos biomas indicados!',
+  ];
+
   NpcComponent({
     required this.npcName,
     required this.dialogueLines,

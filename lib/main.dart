@@ -32,6 +32,7 @@ void main() {
           gameState: gameState,
           game: game as RockCycleGame,
         ),
+        'analysis': (context, game) => const SizedBox.shrink(),
       },
     ),
   );
