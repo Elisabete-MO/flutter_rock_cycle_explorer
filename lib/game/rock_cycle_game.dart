@@ -5,6 +5,7 @@ import '../components/npc_component.dart';
 import '../components/player.dart';
 import '../components/rock_component.dart';
 import '../models/game_state.dart';
+import '../models/rock_model.dart';
 
 /// Loop principal do Rock Cycle Explorer.
 ///
@@ -27,8 +28,18 @@ class RockCycleGame extends FlameGame
   @override
   Future<void> onLoad() async {
     // Adiciona rochas
-    add(RockComponent(rockName: 'Basalto', position: Vector2(100, 100), size: Vector2(40, 40)));
-    add(RockComponent(rockName: 'Granito', position: Vector2(size.x - 100, size.y - 100), size: Vector2(40, 40)));
+    add(RockComponent(
+      rockName: 'Basalto',
+      rockId: 'basalt',
+      position: Vector2(100, 100),
+      size: Vector2(40, 40),
+    ));
+    add(RockComponent(
+      rockName: 'Granito',
+      rockId: 'granite',
+      position: Vector2(size.x - 100, size.y - 100),
+      size: Vector2(40, 40),
+    ));
 
     // Adiciona NPC com diálogo inicial
     add(NpcComponent(
@@ -82,8 +93,21 @@ class RockCycleGame extends FlameGame
   }
 
   void _handleRockContact(RockComponent rock) {
-    // Placeholder para Dia 5+: coleta/análise da rocha.
-    // Quando implementado, deve chamar gameState.registerFieldSample(...)
-    // e/ou abrir o FieldLabOverlay.
+    final model = RockModel.byId(rock.rockId);
+    if (model == null) return;
+
+    // Impede coleta repetida da mesma rocha.
+    if (gameState.fieldSamples.any((r) => r.id == rock.rockId) ||
+        gameState.analyzedRocks.any((r) => r.id == rock.rockId)) {
+      rock.removeFromParent();
+      return;
+    }
+
+    gameState.registerFieldSample(model);
+    gameState.startAnalysis(model);
+
+    // Remove a rocha do mundo para que não possa ser coletada novamente
+    // e para sinalizar visualmente que foi coletada.
+    rock.removeFromParent();
   }
 }

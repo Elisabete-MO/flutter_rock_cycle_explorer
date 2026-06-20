@@ -4,9 +4,11 @@ import 'package:flame/palette.dart';
 
 class RockComponent extends RectangleComponent {
   final String rockName;
+  final String rockId;
 
   RockComponent({
     required this.rockName,
+    required this.rockId,
     required super.position,
     required super.size,
   }) : super(

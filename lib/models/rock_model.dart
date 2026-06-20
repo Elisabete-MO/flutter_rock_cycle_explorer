@@ -32,6 +32,15 @@ class RockModel {
     required this.spriteName,
   });
 
+  /// Busca um [RockModel] pelo [id] na lista [defaultRocks].
+  /// Retorna `null` se nenhuma rocha com o ID fornecido for encontrada.
+  static RockModel? byId(String id) {
+    for (final rock in defaultRocks) {
+      if (rock.id == id) return rock;
+    }
+    return null;
+  }
+
   /// Lista padrão de rochas do ciclo para o MVP
   static List<RockModel> get defaultRocks => const [
         RockModel(
