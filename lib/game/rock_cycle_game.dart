@@ -1,89 +1,143 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
-import '../components/npc_component.dart';
 import '../components/player.dart';
 import '../components/rock_component.dart';
 import '../models/game_state.dart';
 
 /// Loop principal do Rock Cycle Explorer.
 ///
-/// Mixins:
-///  - [HasKeyboardHandlerComponents] → roteia eventos de teclado do Flutter
-///    para todos os componentes que implementam [KeyboardHandler], como o
-///    [Player]. Sem este mixin, as teclas nunca chegam ao player.
-/// O [overlays] property (built-in do [FlameGame]) gerencia overlays do Flutter
-/// via [overlays.add] / [overlays.remove]. Necessário para HUD e diálogo.
+/// Gerencia três fases via [GamePhase]:
+/// - [GamePhase.lab]: tela estática com fundo de laboratório.
+///   O jogador vê apenas o overlay Flutter — o mundo Flame fica oculto.
+/// - [GamePhase.exploration]: mundo com movimentação, coleta de rochas.
+/// - [GamePhase.microscope]: tela estática com fundo de microscópio.
 class RockCycleGame extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
-  // ── Dependências injetadas ──────────────────────────────────────────────────
   final GameState gameState;
 
-  // ── Componentes ──────────────────────────────────────────────────────────────
   late final Player player;
 
   RockCycleGame({required this.gameState});
 
   @override
   Future<void> onLoad() async {
-    // Adiciona rochas
-    add(RockComponent(rockName: 'Basalto', position: Vector2(100, 100), size: Vector2(40, 40)));
-    add(RockComponent(rockName: 'Granito', position: Vector2(size.x - 100, size.y - 100), size: Vector2(40, 40)));
-
-    // Adiciona NPC com diálogo inicial
-    add(NpcComponent(
-      npcName: 'Dra. Terra',
-      dialogueLines: NpcComponent.draTerraInitialDialogue,
-      position: Vector2(size.x - 100, 100),
-      size: Vector2(50, 50),
+    // ── Rochas da primeira quest: Basalto + Obsidiana ─────────────
+    add(RockComponent(
+      rockName: 'Basalto',
+      rockId: 'basalt',
+      position: Vector2(150, 150),
+      size: Vector2(40, 40),
+    ));
+    add(RockComponent(
+      rockName: 'Obsidiana',
+      rockId: 'obsidian',
+      position: Vector2(size.x - 150, size.y - 150),
+      size: Vector2(40, 40),
     ));
 
-    // `size / 2` posiciona o player no centro da tela.
-    // Funciona corretamente porque o Player usa Anchor.center.
+    // ── Jogador ────────────────────────────────────────────────────
     player = Player()..position = size / 2;
-
     add(player);
 
-    // Ativa o HUD automaticamente quando o jogo inicia.
-    showHud();
+    // ── Inicia no laboratório ──────────────────────────────────────
+    showLab();
   }
 
-  // ── Gerenciamento de Overlays ───────────────────────────────────────────────
+  // ═════════════════════════════════════════════════════════════════
+  //  GERENCIAMENTO DE OVERLAYS / FASES
+  // ═════════════════════════════════════════════════════════════════
 
-  /// Ativa o overlay de HUD (XP, nível, quest ativa).
+  /// Abre o laboratório (tela estática, sem movimentação).
+  /// O overlay 'lab' cobre todo o jogo Flame.
+  void showLab() {
+    overlays.add('lab');
+    gameState.setPhase(GamePhase.lab);
+  }
+
+  /// Fecha o laboratório e inicia a fase de exploração.
+  void closeLabAndStartExploration() {
+    overlays.remove('lab');
+    showHud();
+    gameState.setPhase(GamePhase.exploration);
+  }
+
+  /// Mostra o overlay de resultado da coleta.
+  void showCollectionResult() {
+    overlays.add('collectionResult');
+  }
+
+  /// Volta ao laboratório após a coleta.
+  void returnToLab() {
+    overlays.remove('collectionResult');
+    showLab();
+  }
+
+  /// Abre a Bag de amostras (dentro do laboratório).
+  void showBag() {
+    overlays.add('bag');
+  }
+
+  /// Fecha a Bag e abre o microscópio (analysis overlay).
+  void openMicroscope() {
+    overlays.remove('bag');
+    overlays.add('analysis');
+    gameState.setPhase(GamePhase.microscope);
+  }
+
+  /// Transição: analysis → classification.
+  /// Preserva currentSample.
+  void transitionToClassification() {
+    overlays.remove('analysis');
+    overlays.add('classification');
+  }
+
+  /// Fecha a classificação e volta ao laboratório.
+  void closeClassificationAndReturnToLab() {
+    overlays.remove('classification');
+    showLab();
+  }
+
+  /// Abre o overlay de vitória.
+  void showVictory() {
+    overlays.remove('lab');
+    overlays.add('victory');
+  }
+
+  /// HUD
   void showHud() => overlays.add('hud');
-
-  /// Desativa o overlay de HUD.
   void hideHud() => overlays.remove('hud');
 
-  /// Ativa o overlay de diálogo com as falas fornecidas.
-  /// As falas já devem ter sido carregadas no [GameState] antes da chamada.
-  void showDialogue() => overlays.add('dialogue');
-
-  /// Desativa o overlay de diálogo.
-  void hideDialogue() => overlays.remove('dialogue');
-
-  // ── Sistema Centralizado de Interações ──────────────────────────────────────
-
-  /// Único ponto de entrada para todas as colisões do jogador.
-  /// Cada tipo de componente sabe como reagir sem acoplar o Player.
-  void onPlayerCollided(PositionComponent other) {
-    if (other is NpcComponent) {
-      _handleNpcContact(other);
-    } else if (other is RockComponent) {
-      _handleRockContact(other);
-    }
-    // Novos tipos de componente são adicionados AQUI, não no Player.
-  }
-
-  void _handleNpcContact(NpcComponent npc) {
-    gameState.startDialogue(npc.dialogueLines);
+  /// Diálogo
+  void startDialogue(List<String> lines) {
+    gameState.startDialogue(lines);
     showDialogue();
   }
 
+  void showDialogue() => overlays.add('dialogue');
+  void hideDialogue() => overlays.remove('dialogue');
+
+  // ═════════════════════════════════════════════════════════════════
+  //  SISTEMA DE INTERAÇÕES
+  // ═════════════════════════════════════════════════════════════════
+
+  void onPlayerCollided(PositionComponent other) {
+    if (other is RockComponent) {
+      _handleRockContact(other);
+    }
+  }
+
   void _handleRockContact(RockComponent rock) {
-    // Placeholder para Dia 5+: coleta/análise da rocha.
-    // Quando implementado, deve chamar gameState.registerFieldSample(...)
-    // e/ou abrir o FieldLabOverlay.
+    // Coleta a rocha durante a exploração
+    gameState.collectInField(rock.rockId);
+
+    // Remove do mundo (já coletada)
+    rock.removeFromParent();
+
+    // Se todas as amostras foram coletadas, exibe resultado
+    if (gameState.hasCollectedAllRequired) {
+      gameState.finalizeCollection();
+      showCollectionResult();
+    }
   }
 }
