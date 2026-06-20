@@ -17,6 +17,20 @@ class GameState extends ChangeNotifier {
   bool get isQuestCompleted => _isQuestCompleted;
   bool get gameWon => _gameWon;
 
+  // ── Fluxo de Análise (Decoupled MVP) ─────────────────────────────────────────
+  final List<RockModel> _fieldSamples = [];
+  final List<RockModel> _analyzedRocks = [];
+  RockModel? _currentSample;
+
+  /// Amostras coletadas em campo que ainda não passaram pela análise científica.
+  List<RockModel> get fieldSamples => List.unmodifiable(_fieldSamples);
+
+  /// Amostras que completaram o ciclo coleta → análise → registro.
+  List<RockModel> get analyzedRocks => List.unmodifiable(_analyzedRocks);
+
+  /// Amostra atualmente em análise no laboratório de campo, ou `null` se nenhuma.
+  RockModel? get currentSample => _currentSample;
+
   // ── Estado de Diálogo (Dia 4+) ───────────────────────────────────────────────
   List<String> _dialogueLines = [];
   int _currentDialogueIndex = 0;
@@ -66,6 +80,41 @@ class GameState extends ChangeNotifier {
     }
   }
 
+  /// Registra uma amostra coletada em campo (sem XP ainda).
+  /// A amostra fica em [fieldSamples] aguardando análise no laboratório.
+  void registerFieldSample(RockModel sample) {
+    if (!_fieldSamples.any((r) => r.id == sample.id)) {
+      _fieldSamples.add(sample);
+      notifyListeners();
+    }
+  }
+
+  /// Inicia o processo de análise de uma amostra.
+  /// Define [currentSample] para que o overlay de análise saiba qual rocha
+  /// está sendo examinada.
+  void startAnalysis(RockModel sample) {
+    _currentSample = sample;
+    notifyListeners();
+  }
+
+  /// Confirma a análise científica da [currentSample].
+  /// Move a amostra de [fieldSamples] para [analyzedRocks], concede XP,
+  /// verifica progresso da quest e limpa [currentSample].
+  void confirmAnalysis() {
+    final sample = _currentSample;
+    if (sample == null) return;
+    if (_analyzedRocks.any((r) => r.id == sample.id)) {
+      _currentSample = null;
+      return;
+    }
+    _fieldSamples.removeWhere((r) => r.id == sample.id);
+    _analyzedRocks.add(sample);
+    _currentSample = null;
+    addXp(50);
+    _checkQuestProgress();
+    notifyListeners();
+  }
+
   /// Adiciona XP e calcula subida de nível
   void addXp(int amount) {
     _xp += amount;
@@ -79,12 +128,16 @@ class GameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Verifica se os critérios da quest ativa foram atendidos
+  /// Verifica se os critérios da quest ativa foram atendidos.
+  /// Consulta tanto [_collectedRocks] (legado) quanto [_analyzedRocks] (novo fluxo)
+  /// para garantir compatibilidade com ambos os caminhos de coleta.
   void _checkQuestProgress() {
     if (_activeQuest != null) {
       // Quest do MVP: Ter coletado Basalto e Arenito
-      bool temBasalto = _collectedRocks.any((r) => r.id == 'basalt');
-      bool temArenito = _collectedRocks.any((r) => r.id == 'sandstone');
+      bool temBasalto = _collectedRocks.any((r) => r.id == 'basalt') ||
+          _analyzedRocks.any((r) => r.id == 'basalt');
+      bool temArenito = _collectedRocks.any((r) => r.id == 'sandstone') ||
+          _analyzedRocks.any((r) => r.id == 'sandstone');
 
       if (temBasalto && temArenito) {
         _isQuestCompleted = true;
@@ -102,9 +155,12 @@ class GameState extends ChangeNotifier {
     }
   }
 
-  /// Reinicia o estado do jogo
+  /// Reinicia o estado do jogo, incluindo os novos campos do fluxo decoupled.
   void reset() {
     _collectedRocks.clear();
+    _fieldSamples.clear();
+    _analyzedRocks.clear();
+    _currentSample = null;
     _xp = 0;
     _level = 1;
     _activeQuest = 'Colete 1 Basalto (Ígnea) no Vulcão e 1 Arenito (Sedimentar) no Cânion';
