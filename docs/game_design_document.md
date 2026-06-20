@@ -19,6 +19,13 @@ O jogo não é um questionário disfarçado. O aprendizado é consequência da p
 
 1. **Exploração:** Caminhar pelo mapa.
 2. **Coleta de Evidências:** Encontrar rochas e coletar amostras no ambiente.
+> ### Estado das Amostras
+> Uma amostra pode estar em três estados:
+>* Coletada (fieldSamples)
+>* Em análise (currentSample)
+>* Registrada (analyzedRocks)
+>
+>Essa separação existe para representar corretamente o fluxo científico do jogo.
 3. **Retorno à Base Científica:** Voltar ao hub principal da expedição.
 4. **Análise Científica:** Procedimento de observação de propriedades na base.
 5. **Registro da Descoberta:** Adição ao diário/caderno de campo.
@@ -34,10 +41,18 @@ O jogador explora ambientes contínuos (Vulcão, Cânion, Caverna, Montanha). O 
 *Nota de Design: A análise NÃO ocorre durante a exploração.*
 
 ### Fase 2 — Retorno à Base
-Após a coleta, o jogador retorna à base científica. A base funciona como o hub principal do jogo, onde ocorre o diálogo com NPCs, a entrega de amostras, o progresso da narrativa e o início da análise científica.
+
+Após a coleta, o jogador retorna à base científica.
+As amostras coletadas permanecem armazenadas na mochila da Dra. Sophia como "amostras pendentes de análise".
+Nenhum XP é concedido durante a coleta.
+A validação científica das amostras ocorre somente após interação com a Dra. Terra, que inicia o procedimento de análise científicano laboratório.
 
 ### Fase 3 — Análise Científica
-Realizada na base, simulando um procedimento científico (observar cristais, camadas, cor, textura). O jogador utiliza as evidências coletadas para identificar a rocha. A mecânica se assemelha a uma ferramenta analítica do universo do jogo, garantindo a imersão.
+
+Ao conversar com a Dra. Terra, o jogador pode iniciar a análise das amostras pendentes.
+Cada amostra é analisada individualmente.
+Durante a análise, o jogador observa características geológicas da rocha (cristais, camadas, fósseis e bandas metamórficas) e determina sua classificação.
+Somente após a conclusão correta da análise a amostra é registrada no Diário de Campo e gera XP.
 
 ### Fase 4 — Registro
 Ao identificar corretamente a rocha, ela é registrada no caderno de campo da expedição e XP é concedido.
