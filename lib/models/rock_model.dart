@@ -22,6 +22,10 @@ class RockModel {
   final String description;
   final List<String> clues;
   final String spriteName;
+  final bool hasCrystals;
+  final bool hasLayers;
+  final bool hasFossils;
+  final bool hasBands;
 
   const RockModel({
     required this.id,
@@ -30,6 +34,10 @@ class RockModel {
     required this.description,
     required this.clues,
     required this.spriteName,
+    required this.hasCrystals,
+    required this.hasLayers,
+    required this.hasFossils,
+    required this.hasBands,
   });
 
   /// Busca um [RockModel] pelo [id] na lista [defaultRocks].
@@ -48,6 +56,10 @@ class RockModel {
           name: 'Basalto',
           type: RockType.igneous,
           description: 'Formado pelo resfriamento rápido da lava na superfície terrestre.',
+          hasCrystals: false,
+          hasLayers: false,
+          hasFossils: false,
+          hasBands: false,
           clues: [
             'Cor muito escura (cinza escuro a preto).',
             'Textura mineral extremamente fina (grãos não visíveis a olho nu).',
@@ -60,6 +72,10 @@ class RockModel {
           name: 'Granito',
           type: RockType.igneous,
           description: 'Formado pelo resfriamento lento do magma sob a crosta terrestre, permitindo o crescimento de cristais.',
+          hasCrystals: true,
+          hasLayers: false,
+          hasFossils: false,
+          hasBands: false,
           clues: [
             'Textura grossa com cristais visíveis a olho nu.',
             'Padrão salpicado com tons de rosa, branco e preto.',
@@ -72,6 +88,10 @@ class RockModel {
           name: 'Arenito',
           type: RockType.sedimentary,
           description: 'Formado pelo acúmulo, compactação e cimentação de grãos de areia ao longo de milhares de anos.',
+          hasCrystals: false,
+          hasLayers: true,
+          hasFossils: false,
+          hasBands: false,
           clues: [
             'Textura arenosa e áspera ao toque.',
             'Presença de camadas visíveis de deposição de sedimentos.',
@@ -84,6 +104,10 @@ class RockModel {
           name: 'Calcário',
           type: RockType.sedimentary,
           description: 'Formado pelo acúmulo de fragmentos de carbonato de cálcio, frequentemente originados de conchas e esqueletos de organismos marinhos.',
+          hasCrystals: false,
+          hasLayers: true,
+          hasFossils: true,
+          hasBands: false,
           clues: [
             'Pode conter fósseis minúsculos ou impressões de conchas.',
             'Cor geralmente clara (cinza claro, branco ou bege).',
@@ -96,6 +120,10 @@ class RockModel {
           name: 'Gneisse',
           type: RockType.metamorphic,
           description: 'Uma rocha que sofreu intensa pressão e calor, gerando uma segregação de minerais em bandas claras e escuras.',
+          hasCrystals: true,
+          hasLayers: false,
+          hasFossils: false,
+          hasBands: true,
           clues: [
             'Textura foliada com bandas paralelas alternadas de cores claras e escuras.',
             'Formada a partir da transformação física de rochas como o Granito.',
@@ -108,12 +136,32 @@ class RockModel {
           name: 'Mármore',
           type: RockType.metamorphic,
           description: 'Formado pela recristalização do Calcário sob condições de alta temperatura e pressão moderada.',
+          hasCrystals: true,
+          hasLayers: false,
+          hasFossils: false,
+          hasBands: false,
           clues: [
             'Textura cristalina e homogênea.',
             'Cores variadas, frequentemente branca com veios cinzas ou coloridos.',
             'Textura macia o suficiente para ser esculpida facilmente.',
           ],
           spriteName: 'rocks/marble.png',
+        ),
+        RockModel(
+          id: 'obsidian',
+          name: 'Obsidiana',
+          type: RockType.igneous,
+          description: 'Rocha ígnea vulcânica de textura vítrea, formada pelo resfriamento muito rápido da lava.',
+          hasCrystals: false,
+          hasLayers: false,
+          hasFossils: false,
+          hasBands: false,
+          clues: [
+            'Amostra escura com brilho vítreo.',
+            'Superfície lisa, parecida com vidro natural.',
+            'Não apresenta camadas, fósseis ou bandas.',
+          ],
+          spriteName: 'rocks/obsidian.png',
         ),
       ];
 }
