@@ -24,10 +24,12 @@ class DialogueOverlay extends StatelessWidget {
         gameState.currentDialogueIndex >= gameState.dialogueLines.length - 1;
 
     if (isLastLine) {
-      gameState.endDialogue();
+      final completedPurpose = gameState.endDialogue();
 
-      // Se o diálogo de vitória terminou, mostra overlay de vitória
-      if (gameState.isQuestCompleted && !gameState.gameWon) {
+      if (completedPurpose == DialoguePurpose.classificationFeedback &&
+          gameState.isQuestCompleted) {
+        gameState.startVictoryDialogue();
+      } else if (completedPurpose == DialoguePurpose.victory) {
         gameState.completeQuest();
         game.showVictory();
       } else {
@@ -52,16 +54,11 @@ class DialogueOverlay extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 color: Colors.black87,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

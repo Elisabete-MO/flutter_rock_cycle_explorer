@@ -10,52 +10,19 @@ class LabOverlay extends StatefulWidget {
   final GameState gameState;
   final RockCycleGame game;
 
-  const LabOverlay({
-    super.key,
-    required this.gameState,
-    required this.game,
-  });
+  const LabOverlay({super.key, required this.gameState, required this.game});
 
   @override
   State<LabOverlay> createState() => _LabOverlayState();
 }
 
 class _LabOverlayState extends State<LabOverlay> {
-  bool _dialogueStarted = false;
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: widget.gameState,
       builder: (context, _) {
         final gs = widget.gameState;
-
-        // ── Post-feedback finalization ────────────────────────────
-        // Após o diálogo de feedback terminar, finaliza a amostra
-        // (move de fieldSamples para analyzedRocks) e verifica progresso.
-        if (gs.classificationAttempted &&
-            gs.feedbackGiven &&
-            !gs.hasPendingClassificationFeedback &&
-            !gs.isDialogueActive) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              gs.finalizeAfterFeedback();
-              if (gs.isQuestCompleted && !gs.gameWon &&
-                  mounted) {
-                widget.game.startDialogue(GameState.victoryDialogue);
-              }
-            }
-          });
-        }
-
-        // ── Auto-start initial dialogue ───────────────────────────
-        if (!_dialogueStarted && !gs.gameWon && !gs.isDialogueActive) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!_dialogueStarted && mounted) {
-              _startDialogue(GameState.initialDialogue);
-            }
-          });
-        }
 
         return Scaffold(
           backgroundColor: Colors.black,
@@ -101,9 +68,7 @@ class _LabOverlayState extends State<LabOverlay> {
                   left: 0,
                   right: 0,
                   bottom: 40,
-                  child: Center(
-                    child: _buildActionButton(gs),
-                  ),
+                  child: Center(child: _buildActionButton(gs)),
                 ),
 
               // ── Banner de vitória ────────────────────────────────
@@ -146,26 +111,18 @@ class _LabOverlayState extends State<LabOverlay> {
   }
 
   Widget _buildActionButton(GameState gs) {
-    // ── Prioridade 1: Feedback pendente (pós-classificação) ───────
-    if (gs.hasPendingClassificationFeedback) {
-      return _ActionBtn(
-        icon: Icons.chat,
-        label: 'Falar com Dra. Terra',
-        onTap: () => _startFeedbackDialogue(),
-      );
-    }
-
-    // ── Prioridade 2: Amostras para analisar (pós-coleta) ─────────
+    // ── Prioridade 1: Amostras para analisar ───────────────────────
     if (gs.fieldSamples.isNotEmpty) {
       return _ActionBtn(
         icon: Icons.backpack,
-        label: 'Abrir Bag (${gs.fieldSamples.length} amostra${gs.fieldSamples.length > 1 ? 's' : ''})',
+        label:
+            'Abrir Bag (${gs.fieldSamples.length} amostra${gs.fieldSamples.length > 1 ? 's' : ''})',
         onTap: () => widget.game.showBag(),
       );
     }
 
-    // ── Prioridade 3: Após diálogo inicial, pronto para explorar ──
-    if (_dialogueStarted) {
+    // ── Prioridade 2: Após apresentação, pronto para explorar ─────
+    if (gs.initialDialogueCompleted) {
       return _ActionBtn(
         icon: Icons.explore,
         label: 'Iniciar Coleta',
@@ -173,34 +130,15 @@ class _LabOverlayState extends State<LabOverlay> {
       );
     }
 
-    // ── Prioridade 4: Primeira vez (antes do diálogo inicial) ─────
+    // ── Prioridade 3: Primeira vez (antes da apresentação) ─────────
     return _ActionBtn(
       icon: Icons.chat,
       label: 'Falar com Dra. Terra',
-      onTap: () => _startDialogue(GameState.initialDialogue),
+      onTap: () {
+        gs.startInitialDialogue();
+        widget.game.showDialogue();
+      },
     );
-  }
-
-  void _startDialogue(List<String> lines) {
-    widget.gameState.startDialogue(lines);
-    widget.game.showDialogue();
-    _dialogueStarted = true;
-  }
-
-  void _startFeedbackDialogue() {
-    if (!widget.gameState.hasPendingClassificationFeedback) return;
-    final sample = widget.gameState.currentSample;
-    if (sample == null) return;
-
-    final lines = widget.gameState.lastClassificationCorrect
-        ? widget.gameState.generateCorrectFeedbackDialogue(sample)
-        : widget.gameState.generateWrongFeedbackDialogue(sample);
-
-    // Start dialogue FIRST so isDialogueActive=true before feedbackGiven,
-    // preventing the post-feedback check from firing prematurely.
-    widget.gameState.startDialogue(lines);
-    widget.game.showDialogue();
-    widget.gameState.markFeedbackGiven();
   }
 }
 
@@ -233,9 +171,7 @@ class _CharacterSprite extends StatelessWidget {
             color: color,
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            shadows: const [
-              Shadow(color: Colors.black87, blurRadius: 4),
-            ],
+            shadows: const [Shadow(color: Colors.black87, blurRadius: 4)],
           ),
         ),
       ],
@@ -265,9 +201,7 @@ class _ActionBtn extends StatelessWidget {
         backgroundColor: Colors.brown.shade700,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

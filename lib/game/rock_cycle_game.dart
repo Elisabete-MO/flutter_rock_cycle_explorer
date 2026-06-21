@@ -22,19 +22,7 @@ class RockCycleGame extends FlameGame
 
   @override
   Future<void> onLoad() async {
-    // ── Rochas da primeira quest: Basalto + Obsidiana ─────────────
-    add(RockComponent(
-      rockName: 'Basalto',
-      rockId: 'basalt',
-      position: Vector2(150, 150),
-      size: Vector2(40, 40),
-    ));
-    add(RockComponent(
-      rockName: 'Obsidiana',
-      rockId: 'obsidian',
-      position: Vector2(size.x - 150, size.y - 150),
-      size: Vector2(40, 40),
-    ));
+    _addQuestRocks();
 
     // ── Jogador ────────────────────────────────────────────────────
     player = Player()..position = size / 2;
@@ -44,6 +32,25 @@ class RockCycleGame extends FlameGame
     showLab();
   }
 
+  void _addQuestRocks() {
+    add(
+      RockComponent(
+        rockName: 'Basalto',
+        rockId: 'basalt',
+        position: Vector2(150, 150),
+        size: Vector2(40, 40),
+      ),
+    );
+    add(
+      RockComponent(
+        rockName: 'Obsidiana',
+        rockId: 'obsidian',
+        position: Vector2(size.x - 150, size.y - 150),
+        size: Vector2(40, 40),
+      ),
+    );
+  }
+
   // ═════════════════════════════════════════════════════════════════
   //  GERENCIAMENTO DE OVERLAYS / FASES
   // ═════════════════════════════════════════════════════════════════
@@ -51,6 +58,7 @@ class RockCycleGame extends FlameGame
   /// Abre o laboratório (tela estática, sem movimentação).
   /// O overlay 'lab' cobre todo o jogo Flame.
   void showLab() {
+    hideHud();
     overlays.add('lab');
     gameState.setPhase(GamePhase.lab);
   }
@@ -71,6 +79,8 @@ class RockCycleGame extends FlameGame
   void returnToLab() {
     overlays.remove('collectionResult');
     showLab();
+    gameState.startPostCollectionDialogue();
+    showDialogue();
   }
 
   /// Abre a Bag de amostras (dentro do laboratório).
@@ -96,12 +106,31 @@ class RockCycleGame extends FlameGame
   void closeClassificationAndReturnToLab() {
     overlays.remove('classification');
     showLab();
+    if (gameState.startClassificationFeedbackDialogue()) {
+      showDialogue();
+    }
   }
 
   /// Abre o overlay de vitória.
   void showVictory() {
     overlays.remove('lab');
+    overlays.remove('dialogue');
     overlays.add('victory');
+  }
+
+  /// Restaura integralmente o estado e os componentes da primeira quest.
+  void restartAdventure() {
+    overlays.remove('victory');
+    overlays.remove('dialogue');
+    overlays.remove('bag');
+    overlays.remove('analysis');
+    overlays.remove('classification');
+    overlays.remove('collectionResult');
+    hideHud();
+    gameState.reset();
+    _addQuestRocks();
+    player.position = size / 2;
+    showLab();
   }
 
   /// HUD

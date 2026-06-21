@@ -63,9 +63,9 @@ class CollectionResultOverlay extends StatelessWidget {
                   Text(
                     success
                         ? 'Você coletou Basalto e Obsidiana!\n'
-                            'Excelente trabalho de campo!'
+                              'Excelente trabalho de campo!'
                         : 'Que pena! Você ainda não coletou '
-                            'todas as amostras necessárias.',
+                              'todas as amostras necessárias.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
@@ -93,7 +93,7 @@ class CollectionResultOverlay extends StatelessWidget {
                           const Icon(Icons.star, color: Colors.amber, size: 20),
                           const SizedBox(width: 6),
                           Text(
-                            'Máximo 100 XP',
+                            '${GameState.collectionXpReward} XP',
                             style: TextStyle(
                               color: Colors.amber.shade200,
                               fontSize: 14,
