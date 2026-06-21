@@ -37,18 +37,13 @@ class VictoryOverlay extends StatelessWidget {
                 ],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.amber.withValues(alpha: 0.4),
-              ),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // ── Confete ──────────────────────────────────────
-                const Text(
-                  '🎉🎊✨',
-                  style: TextStyle(fontSize: 48),
-                ),
+                const Text('🎉🎊✨', style: TextStyle(fontSize: 48)),
                 const SizedBox(height: 20),
 
                 // ── Título ─────────────────────────────────────────
@@ -96,7 +91,7 @@ class VictoryOverlay extends StatelessWidget {
                       const Icon(Icons.star, color: Colors.amber, size: 28),
                       const SizedBox(width: 12),
                       Text(
-                        '${gameState.xp} XP',
+                        '${gameState.totalXp} XP',
                         style: TextStyle(
                           color: Colors.amber.shade200,
                           fontSize: 28,
@@ -111,10 +106,7 @@ class VictoryOverlay extends StatelessWidget {
                 // ── Botão ──────────────────────────────────────────
                 ElevatedButton(
                   onPressed: () {
-                    // MVP: apenas reinicia o jogo
-                    gameState.reset();
-                    game.overlays.remove('victory');
-                    game.showLab();
+                    game.restartAdventure();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber.shade700,
@@ -128,11 +120,8 @@ class VictoryOverlay extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Recomeçar Expedição',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    'Reiniciar Aventura',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],

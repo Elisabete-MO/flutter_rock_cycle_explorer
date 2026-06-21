@@ -5,7 +5,18 @@ import 'rock_model.dart';
 /// Apenas a fase [exploration] tem movimentação do jogador.
 enum GamePhase { lab, exploration, microscope, bag }
 
+enum DialoguePurpose {
+  none,
+  initial,
+  postCollection,
+  classificationFeedback,
+  victory,
+}
+
 class GameState extends ChangeNotifier {
+  static const int collectionXpReward = 100;
+  static const int questXpReward = 750;
+
   // ── Fase Atual ──────────────────────────────────────────────────────────────
   GamePhase _phase = GamePhase.lab;
   GamePhase get phase => _phase;
@@ -18,14 +29,16 @@ class GameState extends ChangeNotifier {
   // ── Inventário e Progressão ─────────────────────────────────────────────────
   final List<RockModel> _collectedRocks = [];
   int _xp = 0;
+  int _totalXp = 0;
   int _level = 1;
-  String? _activeQuest =
-      'Colete 1 Basalto e 1 Obsidiana no Vulcão!';
+  String? _activeQuest = 'Colete 1 Basalto e 1 Obsidiana no Vulcão!';
   bool _isQuestCompleted = false;
   bool _gameWon = false;
+  bool _collectionRewardGranted = false;
 
   List<RockModel> get collectedRocks => List.unmodifiable(_collectedRocks);
   int get xp => _xp;
+  int get totalXp => _totalXp;
   int get level => _level;
   String? get activeQuest => _activeQuest;
   bool get isQuestCompleted => _isQuestCompleted;
@@ -71,6 +84,10 @@ class GameState extends ChangeNotifier {
         _fieldSamples.add(model);
       }
     }
+    if (hasCollectedAllRequired && !_collectionRewardGranted) {
+      _collectionRewardGranted = true;
+      _grantXp(collectionXpReward);
+    }
     notifyListeners();
   }
 
@@ -110,10 +127,31 @@ class GameState extends ChangeNotifier {
     return _lastClassificationCorrect;
   }
 
+  /// Inicia o feedback correspondente à última classificação.
+  /// Retorna false quando não há uma classificação válida pendente.
+  bool startClassificationFeedbackDialogue() {
+    final sample = _currentSample;
+    if (!hasPendingClassificationFeedback || sample == null) return false;
+
+    _feedbackGiven = true;
+    startDialogue(
+      _lastClassificationCorrect
+          ? generateCorrectFeedbackDialogue(sample)
+          : generateWrongFeedbackDialogue(sample),
+      purpose: DialoguePurpose.classificationFeedback,
+    );
+    return true;
+  }
+
   /// Finaliza a amostra após feedback da Dra. Terra.
   /// Move de fieldSamples para analyzedRocks (0 XP — XP vem da quest).
   /// Tanto acerto quanto erro movem a amostra (não há segunda tentativa).
   void finalizeAfterFeedback() {
+    _finalizeAfterFeedback();
+    notifyListeners();
+  }
+
+  void _finalizeAfterFeedback() {
     final sample = _currentSample;
     if (sample == null) return;
     _fieldSamples.removeWhere((r) => r.id == sample.id);
@@ -125,7 +163,6 @@ class GameState extends ChangeNotifier {
     _lastClassificationCorrect = false;
     _feedbackGiven = false;
     _checkQuestProgress();
-    notifyListeners();
   }
 
   /// Marca que a Dra. Terra deu o feedback.
@@ -146,21 +183,44 @@ class GameState extends ChangeNotifier {
   List<String> _dialogueLines = [];
   int _currentDialogueIndex = 0;
   bool _isDialogueActive = false;
+  bool _initialDialogueCompleted = false;
+  DialoguePurpose _dialoguePurpose = DialoguePurpose.none;
 
   List<String> get dialogueLines => List.unmodifiable(_dialogueLines);
   int get currentDialogueIndex => _currentDialogueIndex;
   bool get isDialogueActive => _isDialogueActive;
+  bool get initialDialogueCompleted => _initialDialogueCompleted;
+  DialoguePurpose get dialoguePurpose => _dialoguePurpose;
 
   String? get currentDialogueLine {
     if (!_isDialogueActive || _dialogueLines.isEmpty) return null;
     return _dialogueLines[_currentDialogueIndex];
   }
 
-  void startDialogue(List<String> lines) {
+  void startDialogue(
+    List<String> lines, {
+    DialoguePurpose purpose = DialoguePurpose.none,
+  }) {
     _dialogueLines = List.from(lines);
     _currentDialogueIndex = 0;
     _isDialogueActive = true;
+    _dialoguePurpose = purpose;
     notifyListeners();
+  }
+
+  void startInitialDialogue() {
+    startDialogue(initialDialogue, purpose: DialoguePurpose.initial);
+  }
+
+  void startPostCollectionDialogue() {
+    startDialogue(
+      postCollectionDialogue,
+      purpose: DialoguePurpose.postCollection,
+    );
+  }
+
+  void startVictoryDialogue() {
+    startDialogue(victoryDialogue, purpose: DialoguePurpose.victory);
   }
 
   void advanceDialogue() {
@@ -170,11 +230,21 @@ class GameState extends ChangeNotifier {
     }
   }
 
-  void endDialogue() {
+  DialoguePurpose endDialogue() {
+    final completedPurpose = _dialoguePurpose;
     _isDialogueActive = false;
     _dialogueLines = [];
     _currentDialogueIndex = 0;
+    _dialoguePurpose = DialoguePurpose.none;
+
+    if (completedPurpose == DialoguePurpose.initial) {
+      _initialDialogueCompleted = true;
+    } else if (completedPurpose == DialoguePurpose.classificationFeedback) {
+      _finalizeAfterFeedback();
+    }
+
     notifyListeners();
+    return completedPurpose;
   }
 
   // ── Geração de Diálogos da Dra. Terra ───────────────────────────────────────
@@ -301,6 +371,12 @@ class GameState extends ChangeNotifier {
 
   // ── XP e Progressão ─────────────────────────────────────────────────────────
   void addXp(int amount) {
+    _grantXp(amount);
+    notifyListeners();
+  }
+
+  void _grantXp(int amount) {
+    _totalXp += amount;
     _xp += amount;
     int nextLevelXp = _level * 100;
     while (_xp >= nextLevelXp) {
@@ -308,7 +384,6 @@ class GameState extends ChangeNotifier {
       _level++;
       nextLevelXp = _level * 100;
     }
-    notifyListeners();
   }
 
   void _checkQuestProgress() {
@@ -323,7 +398,7 @@ class GameState extends ChangeNotifier {
 
   void completeQuest() {
     if (_isQuestCompleted && !_gameWon) {
-      addXp(750);
+      _grantXp(questXpReward);
       _activeQuest = 'Missão Cumprida! Você catalogou Basalto e Obsidiana!';
       _gameWon = true;
       notifyListeners();
@@ -341,11 +416,18 @@ class GameState extends ChangeNotifier {
     _lastClassificationCorrect = false;
     _feedbackGiven = false;
     _xp = 0;
+    _totalXp = 0;
     _level = 1;
     _activeQuest = 'Colete 1 Basalto e 1 Obsidiana no Vulcão!';
     _isQuestCompleted = false;
     _gameWon = false;
+    _collectionRewardGranted = false;
     _phase = GamePhase.lab;
+    _dialogueLines = [];
+    _currentDialogueIndex = 0;
+    _isDialogueActive = false;
+    _initialDialogueCompleted = false;
+    _dialoguePurpose = DialoguePurpose.none;
     notifyListeners();
   }
 }
