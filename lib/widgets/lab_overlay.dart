@@ -31,7 +31,7 @@ class _LabOverlayState extends State<LabOverlay> {
             children: [
               // ── Fundo do laboratório ─────────────────────────────
               Image.asset(
-                'imgs/lab.png',
+                'imgs/bcgs/lab.png',
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Container(
                   color: const Color(0xFF2C1810),

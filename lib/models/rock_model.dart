@@ -65,7 +65,7 @@ class RockModel {
             'Textura mineral extremamente fina (grãos não visíveis a olho nu).',
             'Comum em regiões de vulcanismo ativo.',
           ],
-          spriteName: 'rocks/basalt.png',
+          spriteName: 'imgs/rocks/basalt.jpeg',
         ),
         RockModel(
           id: 'granite',
@@ -81,7 +81,7 @@ class RockModel {
             'Padrão salpicado com tons de rosa, branco e preto.',
             'Contém minerais como quartzo, feldspato e mica.',
           ],
-          spriteName: 'rocks/granite.png',
+          spriteName: 'imgs/rocks/granite.png',
         ),
         RockModel(
           id: 'sandstone',
@@ -97,7 +97,7 @@ class RockModel {
             'Presença de camadas visíveis de deposição de sedimentos.',
             'Composto principalmente de grãos de quartzo.',
           ],
-          spriteName: 'rocks/sandstone.png',
+          spriteName: 'imgs/rocks/sandstone.png',
         ),
         RockModel(
           id: 'limestone',
@@ -113,7 +113,7 @@ class RockModel {
             'Cor geralmente clara (cinza claro, branco ou bege).',
             'Reage quimicamente com ácidos suaves liberando bolhas.',
           ],
-          spriteName: 'rocks/limestone.png',
+          spriteName: 'imgs/rocks/limestone.png',
         ),
         RockModel(
           id: 'gneiss',
@@ -129,7 +129,7 @@ class RockModel {
             'Formada a partir da transformação física de rochas como o Granito.',
             'Cristais alinhados perpendicularmente à direção da pressão sofrida.',
           ],
-          spriteName: 'rocks/gneiss.png',
+          spriteName: 'imgs/rocks/gneiss.png',
         ),
         RockModel(
           id: 'marble',
@@ -145,7 +145,7 @@ class RockModel {
             'Cores variadas, frequentemente branca com veios cinzas ou coloridos.',
             'Textura macia o suficiente para ser esculpida facilmente.',
           ],
-          spriteName: 'rocks/marble.png',
+          spriteName: 'imgs/rocks/marble.png',
         ),
         RockModel(
           id: 'obsidian',
@@ -161,7 +161,7 @@ class RockModel {
             'Superfície lisa, parecida com vidro natural.',
             'Não apresenta camadas, fósseis ou bandas.',
           ],
-          spriteName: 'rocks/obsidian.png',
+          spriteName: 'imgs/rocks/obsidian.jpg',
         ),
       ];
 }
