@@ -63,12 +63,25 @@ class _LabOverlayState extends State<LabOverlay> {
               ),
 
               // ── Botões de ação ───────────────────────────────────
-              if (!gs.isDialogueActive && !gs.gameWon)
+              if (gs.phase == GamePhase.lab &&
+                  !gs.isDialogueActive &&
+                  !gs.gameWon)
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: 40,
-                  child: Center(child: _buildActionButton(gs)),
+                  child: Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        _buildActionButton(gs),
+                        if (gs.fieldBookUnlocked)
+                          _buildFieldBookButton(context),
+                      ],
+                    ),
+                  ),
                 ),
 
               // ── Banner de vitória ────────────────────────────────
@@ -114,7 +127,7 @@ class _LabOverlayState extends State<LabOverlay> {
     // ── Prioridade 1: Amostras para analisar ───────────────────────
     if (gs.fieldSamples.isNotEmpty) {
       return _ActionBtn(
-        icon: Icons.backpack,
+        icon: const Icon(Icons.backpack),
         label:
             'Abrir Bag (${gs.fieldSamples.length} amostra${gs.fieldSamples.length > 1 ? 's' : ''})',
         onTap: () => widget.game.showBag(),
@@ -124,7 +137,7 @@ class _LabOverlayState extends State<LabOverlay> {
     // ── Prioridade 2: Após apresentação, pronto para explorar ─────
     if (gs.initialDialogueCompleted) {
       return _ActionBtn(
-        icon: Icons.explore,
+        icon: const Icon(Icons.explore),
         label: 'Iniciar Coleta',
         onTap: () => widget.game.closeLabAndStartExploration(),
       );
@@ -132,11 +145,41 @@ class _LabOverlayState extends State<LabOverlay> {
 
     // ── Prioridade 3: Primeira vez (antes da apresentação) ─────────
     return _ActionBtn(
-      icon: Icons.chat,
+      icon: const Icon(Icons.chat),
       label: 'Falar com Dra. Terra',
       onTap: () {
         gs.startInitialDialogue();
         widget.game.showDialogue();
+      },
+    );
+  }
+
+  Widget _buildFieldBookButton(BuildContext context) {
+    return _ActionBtn(
+      icon: ClipOval(
+        child: Image.asset(
+          'imgs/icons/diary.png',
+          width: 24,
+          height: 24,
+          cacheWidth: 64,
+          fit: BoxFit.cover,
+        ),
+      ),
+      label: 'Diário',
+      onTap: () {
+        showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Diário de Campo'),
+            content: const Text('Conteúdo em desenvolvimento.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Fechar'),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
@@ -181,7 +224,7 @@ class _CharacterSprite extends StatelessWidget {
 
 /// Botão de ação padronizado do laboratório.
 class _ActionBtn extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String label;
   final VoidCallback onTap;
 
@@ -195,7 +238,7 @@ class _ActionBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon),
+      icon: icon,
       label: Text(label, style: const TextStyle(fontSize: 15)),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.brown.shade700,

@@ -184,13 +184,25 @@ class GameState extends ChangeNotifier {
   int _currentDialogueIndex = 0;
   bool _isDialogueActive = false;
   bool _initialDialogueCompleted = false;
+  bool _fieldBookUnlocked = false;
   DialoguePurpose _dialoguePurpose = DialoguePurpose.none;
 
   List<String> get dialogueLines => List.unmodifiable(_dialogueLines);
   int get currentDialogueIndex => _currentDialogueIndex;
   bool get isDialogueActive => _isDialogueActive;
   bool get initialDialogueCompleted => _initialDialogueCompleted;
+  bool get fieldBookUnlocked => _fieldBookUnlocked;
   DialoguePurpose get dialoguePurpose => _dialoguePurpose;
+
+  void unlockFieldBook() {
+    if (_setFieldBookUnlocked()) notifyListeners();
+  }
+
+  bool _setFieldBookUnlocked() {
+    if (_fieldBookUnlocked) return false;
+    _fieldBookUnlocked = true;
+    return true;
+  }
 
   String? get currentDialogueLine {
     if (!_isDialogueActive || _dialogueLines.isEmpty) return null;
@@ -239,6 +251,7 @@ class GameState extends ChangeNotifier {
 
     if (completedPurpose == DialoguePurpose.initial) {
       _initialDialogueCompleted = true;
+      _setFieldBookUnlocked();
     } else if (completedPurpose == DialoguePurpose.classificationFeedback) {
       _finalizeAfterFeedback();
     }
@@ -427,6 +440,7 @@ class GameState extends ChangeNotifier {
     _currentDialogueIndex = 0;
     _isDialogueActive = false;
     _initialDialogueCompleted = false;
+    _fieldBookUnlocked = false;
     _dialoguePurpose = DialoguePurpose.none;
     notifyListeners();
   }

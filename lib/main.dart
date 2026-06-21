@@ -26,39 +26,36 @@ void main() {
   final gameState = GameState();
 
   runApp(
-    GameWidget(
-      game: RockCycleGame(gameState: gameState),
-      overlayBuilderMap: {
-        'hud': (context, game) => HudOverlay(gameState: gameState),
-        'dialogue': (context, game) => DialogueOverlay(
-          gameState: gameState,
-          game: game as RockCycleGame,
-        ),
-        'lab': (context, game) => LabOverlay(
-          gameState: gameState,
-          game: game as RockCycleGame,
-        ),
-        'bag': (context, game) => BagOverlay(
-          gameState: gameState,
-          game: game as RockCycleGame,
-        ),
-        'analysis': (context, game) => AnalysisOverlay(
-          gameState: gameState,
-          game: game as RockCycleGame,
-        ),
-        'classification': (context, game) => ClassificationOverlay(
-          gameState: gameState,
-          game: game as RockCycleGame,
-        ),
-        'collectionResult': (context, game) => CollectionResultOverlay(
-          gameState: gameState,
-          game: game as RockCycleGame,
-        ),
-        'victory': (context, game) => VictoryOverlay(
-          gameState: gameState,
-          game: game as RockCycleGame,
-        ),
-      },
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: GameWidget(
+        game: RockCycleGame(gameState: gameState),
+        overlayBuilderMap: {
+          'hud': (context, game) => HudOverlay(gameState: gameState),
+          'dialogue': (context, game) => DialogueOverlay(
+            gameState: gameState,
+            game: game as RockCycleGame,
+          ),
+          'lab': (context, game) =>
+              LabOverlay(gameState: gameState, game: game as RockCycleGame),
+          'bag': (context, game) =>
+              BagOverlay(gameState: gameState, game: game as RockCycleGame),
+          'analysis': (context, game) => AnalysisOverlay(
+            gameState: gameState,
+            game: game as RockCycleGame,
+          ),
+          'classification': (context, game) => ClassificationOverlay(
+            gameState: gameState,
+            game: game as RockCycleGame,
+          ),
+          'collectionResult': (context, game) => CollectionResultOverlay(
+            gameState: gameState,
+            game: game as RockCycleGame,
+          ),
+          'victory': (context, game) =>
+              VictoryOverlay(gameState: gameState, game: game as RockCycleGame),
+        },
+      ),
     ),
   );
 }
