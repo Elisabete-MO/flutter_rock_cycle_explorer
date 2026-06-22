@@ -5,45 +5,76 @@ import 'package:flame/palette.dart';
 import 'package:flutter/services.dart';
 
 import '../game/rock_cycle_game.dart';
+import '../models/game_state.dart';
 
-/// Dra. Sophia — componente do jogador (MVP placeholder visual).
+/// Dra. Sophia — componente do jogador no modo corrida automática.
 ///
-/// Responsabilidades (Dia 2 MVP):
-///  - Renderização como quadrado azul.
-///  - Movimentação suave com WASD e teclas direcionais.
-///  - Contenção dentro dos limites visíveis do jogo.
-class Player extends RectangleComponent with KeyboardHandler, HasGameReference<RockCycleGame>, CollisionCallbacks {
-  // ── Configuração ─────────────────────────────────────────────────────────
-  static const double _speed = 200.0; // pixels por segundo
+/// Na fase [GamePhase.exploration]:
+/// - Sophia corre automaticamente para a direita.
+/// - O jogador controla apenas o pulo (espaço / seta p/ cima / W).
+/// - Gravidade puxa Sophia para baixo; o chão invisível a segura em [groundY].
+/// - Colisões com [RockComponent] são delegadas ao jogo via [onPlayerCollided].
+///
+/// Fora da fase exploration o componente fica inerte (não se move).
+class Player extends RectangleComponent
+    with KeyboardHandler, HasGameReference<RockCycleGame>, CollisionCallbacks {
+  // ═══════════════════════════════════════════════════════════════════
+  //  CONSTANTES CONFIGURÁVEIS
+  // ═══════════════════════════════════════════════════════════════════
 
-  // ── Estado interno ────────────────────────────────────────────────────────
+  /// Velocidade horizontal automática da corrida (px/s).
+  /// Ajuste este valor para controlar a duração da fase.
+  static const double autoRunSpeed = 120.0;
+
+  /// Velocidade vertical inicial do pulo (negativo = para cima).
+  static const double jumpVelocity = -420.0;
+
+  /// Aceleração gravitacional (px/s²).
+  static const double gravity = 800.0;
+
+  /// Posição Y do chão — alinhar a "base" (pés) de Sophia à plataforma
+  /// principal do background vulcânico. Como o anchor é [Anchor.bottomCenter],
+  /// a position.y corresponde diretamente à linha do chão.
+  static double groundY = 500.0;
+
+  /// Limite direito da fase (quando atingido, a coleta termina).
+  static double endX = 0;
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  ESTADO INTERNO
+  // ═══════════════════════════════════════════════════════════════════
+
   final Vector2 _velocity = Vector2.zero();
+  bool _isOnGround = false;
+  bool _endReached = false;
 
-  // ── Construtor ────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  //  CONSTRUTOR
+  // ═══════════════════════════════════════════════════════════════════
+
   Player()
       : super(
-          size: Vector2.all(50),
+          size: Vector2.all(40),
           paint: BasicPalette.blue.paint(),
-          // Anchor.center faz com que `position` aponte para o centro do
-          // sprite, simplificando o posicionamento e o cálculo de bordas.
-          anchor: Anchor.center,
+          anchor: Anchor.bottomCenter,
+          priority: 10,
         );
 
-  // ── Ciclo de vida ─────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  //  CICLO DE VIDA
+  // ═══════════════════════════════════════════════════════════════════
 
   @override
   Future<void> onLoad() async {
-    // Adiciona o hitbox para permitir colisões
     add(RectangleHitbox());
   }
 
   @override
   void onCollisionStart(
-      Set<Vector2> intersectionPoints, PositionComponent other) {
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
     super.onCollisionStart(intersectionPoints, other);
-
-    // Delega a decisão ao game, que centraliza a lógica de interação.
-    // O Player não precisa mais conhecer os tipos concretos dos componentes.
     game.onPlayerCollided(other);
   }
 
@@ -51,75 +82,88 @@ class Player extends RectangleComponent with KeyboardHandler, HasGameReference<R
   void update(double dt) {
     super.update(dt);
 
-    // Aplica velocidade × delta time → movimento independente de frame rate.
+    // Só se move durante a exploração
+    if (game.gameState.phase != GamePhase.exploration) return;
+
+    // ── Já atingiu o fim da fase? ───────────────────────────────────
+    if (_endReached) return;
+
+    // ── Gravidade ──────────────────────────────────────────────────
+    if (!_isOnGround) {
+      _velocity.y += gravity * dt;
+    }
+
+    // ── Corrida automática ─────────────────────────────────────────
+    _velocity.x = autoRunSpeed;
+
+    // ── Aplica velocidade ──────────────────────────────────────────
     position += _velocity * dt;
 
-    // ── Contenção de bordas ───────────────────────────────────────────────
-    // Anchor.center → position aponta para o centro do sprite.
-    // Logo, o centro pode variar de (halfW, halfH) até
-    // (canvasWidth - halfW, canvasHeight - halfH).
-    //
-    // Guard: quando canvas < size (janela menor que o player), a expressão
-    // (canvas - half) < half, tornando min > max no clamp → exceção Dart.
-    // Usamos max(min, maxBound) para colapsar o intervalo para um único ponto
-    // (o centro do canvas) sem lançar exceção.
+    // ── Colisão com o chão ─────────────────────────────────────────
+    if (position.y >= groundY) {
+      position.y = groundY;
+      _velocity.y = 0;
+      _isOnGround = true;
+    }
+
+    // ── Limite esquerdo ────────────────────────────────────────────
     final halfW = size.x / 2;
-    final halfH = size.y / 2;
-    final canvas = game.canvasSize;
+    if (position.x < halfW) {
+      position.x = halfW;
+      _velocity.x = math.max(0, _velocity.x);
+    }
 
-    final minX = halfW;
-    final maxX = math.max(minX, canvas.x - halfW);
-    final minY = halfH;
-    final maxY = math.max(minY, canvas.y - halfH);
-
-    position.x = position.x.clamp(minX, maxX);
-    position.y = position.y.clamp(minY, maxY);
+    // ── Limite direito (fim da fase) ────────────────────────────────
+    if (endX > 0 && position.x >= endX) {
+      position.x = endX;
+      _velocity.x = 0;
+      _velocity.y = 0;
+      if (!_endReached) {
+        _endReached = true;
+        game.onPlayerReachedEnd();
+      }
+    }
   }
 
-  // ── Entrada de teclado ────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  //  ENTRADA DE TECLADO
+  // ═══════════════════════════════════════════════════════════════════
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    // Recalcula a velocidade toda vez que o estado das teclas muda.
-    // Isso garante que soltar uma tecla pare o eixo correspondente.
-    _updateVelocity(keysPressed);
-    // Retorna false para não consumir o evento, permitindo que outros
-    // componentes também o recebam se necessário.
+    if (event is KeyDownEvent) {
+      if (keysPressed.contains(LogicalKeyboardKey.space) ||
+          keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
+          keysPressed.contains(LogicalKeyboardKey.keyW)) {
+        _jump();
+      }
+    }
     return false;
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  //  HELPERS
+  // ═══════════════════════════════════════════════════════════════════
 
-  void _updateVelocity(Set<LogicalKeyboardKey> keysPressed) {
-    double dx = 0;
-    double dy = 0;
+  void _jump() {
+    if (_isOnGround && game.gameState.phase == GamePhase.exploration) {
+      _velocity.y = jumpVelocity;
+      _isOnGround = false;
+    }
+  }
 
-    // Horizontal
-    if (keysPressed.contains(LogicalKeyboardKey.keyA) ||
-        keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
-      dx -= _speed;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.keyD) ||
-        keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
-      dx += _speed;
-    }
+  /// Prepara o jogador para uma nova corrida.
+  void resetForAutoRun(Vector2 startPosition, double levelEndX) {
+    position = startPosition;
+    _velocity.setValues(autoRunSpeed, 0);
+    _isOnGround = true;
+    _endReached = false;
+    endX = levelEndX;
+  }
 
-    // Vertical (y cresce para baixo no Flame)
-    if (keysPressed.contains(LogicalKeyboardKey.keyW) ||
-        keysPressed.contains(LogicalKeyboardKey.arrowUp)) {
-      dy -= _speed;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.keyS) ||
-        keysPressed.contains(LogicalKeyboardKey.arrowDown)) {
-      dy += _speed;
-    }
-
-    // Normalização diagonal: impede que o jogador se mova ~41% mais rápido
-    // ao pressionar dois eixos simultaneamente.
-    _velocity.setValues(dx, dy);
-    if (_velocity.length > _speed) {
-      _velocity.normalize();
-      _velocity.scale(_speed);
-    }
+  /// Para o jogador imediatamente (usado quando a coleta é concluída).
+  void stop() {
+    _velocity.setValues(0, 0);
+    _endReached = true;
   }
 }

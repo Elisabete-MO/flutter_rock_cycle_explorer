@@ -60,7 +60,11 @@ flutter:
 
   assets:
     - imgs/
-    - imgs/icons/diary.png
+    - imgs/bcgs/
+    - imgs/chars/
+    - imgs/icons/
+    - imgs/rocks/
+    - assets/images/imgs/bcgs/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
