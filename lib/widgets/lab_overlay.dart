@@ -71,16 +71,21 @@ class _LabOverlayState extends State<LabOverlay> {
                   right: 0,
                   bottom: 40,
                   child: Center(
-                    child: Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        _buildActionButton(gs),
-                        if (gs.fieldBookUnlocked)
-                          _buildFieldBookButton(context),
-                      ],
-                    ),
+                    child: _buildActionButton(gs),
+                  ),
+                ),
+
+              // ── Botão do Diário (ícone) — canto superior direito ──
+              if (gs.fieldBookUnlocked &&
+                  gs.phase == GamePhase.lab &&
+                  !gs.isDialogueActive &&
+                  !gs.gameWon)
+                Positioned(
+                  top: 24,
+                  right: 24,
+                  child: _DiaryIconButton(
+                    key: const Key('diary_button'),
+                    onTap: () => widget.game.showFieldBook(),
                   ),
                 ),
 
@@ -154,19 +159,87 @@ class _LabOverlayState extends State<LabOverlay> {
     );
   }
 
-  Widget _buildFieldBookButton(BuildContext context) {
-    return _ActionBtn(
-      icon: ClipOval(
-        child: Image.asset(
-          'imgs/icons/diary.png',
-          width: 24,
-          height: 24,
-          cacheWidth: 64,
-          fit: BoxFit.cover,
-        ),
+}
+
+/// Botão redondo do Diário de Campo (ícone, canto superior direito).
+/// Anima um glow pulsante na borda para dar destaque na tela.
+class _DiaryIconButton extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const _DiaryIconButton({super.key, required this.onTap});
+
+  @override
+  State<_DiaryIconButton> createState() => _DiaryIconButtonState();
+}
+
+class _DiaryIconButtonState extends State<_DiaryIconButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+    _pulse = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Abrir Diário de Campo',
+      button: true,
+      child: AnimatedBuilder(
+        animation: _pulse,
+        builder: (context, child) {
+          final glowOpacity = 0.3 + (_pulse.value * 0.5);
+          final shadowBlur = 6.0 + (_pulse.value * 10.0);
+          final borderOpacity = 0.5 + (_pulse.value * 0.5);
+          return SizedBox(
+            width: 60,
+            height: 60,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: widget.onTap,
+                borderRadius: BorderRadius.circular(30),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.brown.shade800.withValues(alpha: 0.92),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.amber.withValues(alpha: borderOpacity),
+                      width: 2.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withValues(alpha: glowOpacity),
+                        blurRadius: shadowBlur,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'imgs/icons/diary.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
-      label: 'Diário',
-      onTap: () => widget.game.showFieldBook(),
     );
   }
 }

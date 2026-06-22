@@ -97,23 +97,7 @@ class _MicroscopeView extends StatelessWidget {
 
                     // ── Imagem da amostra ──────────────────────────
                     Center(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(50),
-                          border: Border.all(
-                            color: Colors.cyan.withValues(alpha: 0.3),
-                            width: 2,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.grain,
-                          color: Colors.cyan.withValues(alpha: 0.6),
-                          size: 48,
-                        ),
-                      ),
+                      child: _RockPhoto(iconPath: sample.photoAssetPath),
                     ),
                     const SizedBox(height: 20),
 
@@ -203,6 +187,46 @@ class _MicroscopeView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Foto em destaque da rocha na análise.
+class _RockPhoto extends StatelessWidget {
+  final String? iconPath;
+
+  const _RockPhoto({required this.iconPath});
+
+  @override
+  Widget build(BuildContext context) {
+    if (iconPath != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          iconPath!,
+          width: 160,
+          height: 120,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => _fallback(),
+        ),
+      );
+    }
+    return _fallback();
+  }
+
+  Widget _fallback() {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(50),
+      ),
+      child: const Icon(
+        Icons.grain,
+        color: Colors.white38,
+        size: 48,
       ),
     );
   }

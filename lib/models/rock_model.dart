@@ -27,6 +27,32 @@ class RockModel {
   final bool hasFossils;
   final bool hasBands;
 
+  /// Caminho do asset da foto real da rocha (para exibição em UI).
+  /// Retorna `null` se não houver foto disponível.
+  String? get photoAssetPath {
+    switch (id) {
+      case 'basalt':
+        return 'imgs/rocks/basalt_photo.jpeg';
+      case 'obsidian':
+        return 'imgs/rocks/obsidian_photo.jpg';
+      default:
+        return null;
+    }
+  }
+
+  /// Caminho do asset do ícone recortado da rocha (com transparência).
+  /// Retorna `null` se não houver ícone disponível.
+  String? get iconAssetPath {
+    switch (id) {
+      case 'basalt':
+        return 'imgs/icons/basalto_icon.png';
+      case 'obsidian':
+        return 'imgs/icons/obsidian_icon.png';
+      default:
+        return null;
+    }
+  }
+
   const RockModel({
     required this.id,
     required this.name,
