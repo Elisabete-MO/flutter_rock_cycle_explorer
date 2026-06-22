@@ -40,7 +40,6 @@ class AnalysisOverlay extends StatelessWidget {
     );
   }
 }
-
 /// Tela do microscópio com a amostra em observação.
 class _MicroscopeView extends StatelessWidget {
   final RockModel sample;
@@ -60,7 +59,7 @@ class _MicroscopeView extends StatelessWidget {
         children: [
           // ── Fundo do microscópio ─────────────────────────────────
           Image.asset(
-            'imgs/mic.png',
+            'imgs/bcgs/mic.png',
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) => Container(
               color: const Color(0xFF1A1A2E),
