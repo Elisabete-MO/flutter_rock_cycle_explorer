@@ -7,6 +7,7 @@ import 'widgets/bag_overlay.dart';
 import 'widgets/classification_overlay.dart';
 import 'widgets/collection_result_overlay.dart';
 import 'widgets/dialogue_overlay.dart';
+import 'widgets/field_book_overlay.dart';
 import 'widgets/hud_overlay.dart';
 import 'widgets/lab_overlay.dart';
 import 'widgets/victory_overlay.dart';
@@ -49,6 +50,10 @@ void main() {
             game: game as RockCycleGame,
           ),
           'collectionResult': (context, game) => CollectionResultOverlay(
+            gameState: gameState,
+            game: game as RockCycleGame,
+          ),
+          'fieldBook': (context, game) => FieldBookOverlay(
             gameState: gameState,
             game: game as RockCycleGame,
           ),

@@ -72,6 +72,7 @@ class DialogueOverlay extends StatelessWidget {
                         color: Colors.greenAccent.shade200,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.none,
                       ),
                     ),
                   ),
@@ -82,20 +83,24 @@ class DialogueOverlay extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 15,
                       height: 1.4,
+                      decoration: TextDecoration.none,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: _handleContinue,
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.amberAccent,
-                    ),
+                  GestureDetector(
+                    onTap: _handleContinue,
                     child: Text(
                       gameState.currentDialogueIndex >=
                               gameState.dialogueLines.length - 1
                           ? 'Concluir'
                           : 'Continuar',
+                      style: const TextStyle(
+                        color: Colors.amberAccent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.none,
+                      ),
                     ),
                   ),
                 ],

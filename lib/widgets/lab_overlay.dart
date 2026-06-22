@@ -166,21 +166,7 @@ class _LabOverlayState extends State<LabOverlay> {
         ),
       ),
       label: 'Diário',
-      onTap: () {
-        showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Diário de Campo'),
-            content: const Text('Conteúdo em desenvolvimento.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Fechar'),
-              ),
-            ],
-          ),
-        );
-      },
+      onTap: () => widget.game.showFieldBook(),
     );
   }
 }
