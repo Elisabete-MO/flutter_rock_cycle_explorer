@@ -118,6 +118,16 @@ class RockCycleGame extends FlameGame
     overlays.add('victory');
   }
 
+  /// Abre o Diário de Campo.
+  void showFieldBook() {
+    overlays.add('fieldBook');
+  }
+
+  /// Fecha o Diário de Campo (retorna ao laboratório).
+  void closeFieldBook() {
+    overlays.remove('fieldBook');
+  }
+
   /// Restaura integralmente o estado e os componentes da primeira quest.
   void restartAdventure() {
     overlays.remove('victory');

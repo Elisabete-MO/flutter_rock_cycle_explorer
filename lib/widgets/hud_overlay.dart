@@ -20,29 +20,32 @@ class HudOverlay extends StatelessWidget {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Linha superior: nível e XP ────────────────────────────
-                Row(
-                  children: [
-                    _Badge(label: 'Nv ${gameState.level}'),
-                    const SizedBox(width: 12),
-                    _XpBar(xp: gameState.xp, level: gameState.level),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                // ── Missão ativa ──────────────────────────────────────────
-                if (gameState.activeQuest != null)
-                  Text(
-                    gameState.activeQuest!,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+            child: DefaultTextStyle(
+              style: const TextStyle(decoration: TextDecoration.none),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Linha superior: nível e XP ────────────────────────────
+                  Row(
+                    children: [
+                      _Badge(label: 'Nv ${gameState.level}'),
+                      const SizedBox(width: 12),
+                      _XpBar(xp: gameState.xp, level: gameState.level),
+                    ],
                   ),
-              ],
+                  const SizedBox(height: 4),
+                  // ── Missão ativa ──────────────────────────────────────────
+                  if (gameState.activeQuest != null)
+                    Text(
+                      gameState.activeQuest!,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
             ),
           ),
         );
