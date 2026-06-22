@@ -22,18 +22,26 @@ class RockCycleGame extends FlameGame
   late final Player player;
 
   // ═══════════════════════════════════════════════════════════════════
-  //  CONSTANTES DA FASE DE CORRIDA
+  //  POSIÇÕES RESPONSIVAS DA FASE DE CORRIDA
+  //  Todas as coordenadas usam percentuais do [size] do canvas em vez
+  //  de valores fixos, garantindo funcionamento em mobile paisagem.
   // ═══════════════════════════════════════════════════════════════════
 
-  /// Altura do chão — alinha a base (pés) de Sophia à plataforma
-  /// principal do background vulcânico (imgs/bcgs/vulcan.png).
-  /// O player usa [Anchor.bottomCenter], portanto position.y desta
-  /// constante equivale diretamente à linha do chão.
-  static const double groundY = 500;
+  /// Altura do chão — percentual do canvas.
+  /// Alinha a base (pés) de Sophia à plataforma principal do background.
+  double get runnerGroundY => size.y * 0.78;
 
-  /// Posição horizontal inicial da Sophia (canto inferior do player
-  /// alinhado a este X, já que o anchor é bottomCenter).
-  static const double playerStartX = 80;
+  /// Posição horizontal inicial da Sophia.
+  double get runnerPlayerStartX => size.x * 0.10;
+
+  /// Limite direito da fase (quando atingido, a coleta termina).
+  double get runnerLevelEndX => size.x - 60;
+
+  /// Posição horizontal do Basalto (no chão).
+  double get runnerBasaltX => size.x * 0.35;
+
+  /// Posição horizontal da Obsidiana (elevada, pulo simples).
+  double get runnerObsidianX => size.x * 0.65;
 
   // ═══════════════════════════════════════════════════════════════════
   //  ESTADO INTERNO
@@ -58,6 +66,42 @@ class RockCycleGame extends FlameGame
 
     // ── Inicia no laboratório ──────────────────────────────────────
     showLab();
+  }
+
+  /// Chamado pelo Flame quando o canvas é redimensionado ou a orientação
+  /// muda. Recalcula posições para manter a fase responsiva.
+  @override
+  void onGameResize(Vector2 newSize) {
+    super.onGameResize(newSize);
+
+    // Redimensiona o background para cobrir a nova área
+    if (_background != null) {
+      _background!.size = newSize;
+    }
+
+    // Se estiver na fase de exploração, recalcula posições dos elementos
+    if (gameState.phase == GamePhase.exploration) {
+      _repositionAutoRunElements(newSize);
+    }
+  }
+
+  /// Recalcula posições do jogador e das rochas após redimensionamento.
+  void _repositionAutoRunElements(Vector2 newSize) {
+    final gy = newSize.y * 0.78;
+    Player.groundY = gy;
+    player.resetForAutoRun(
+      Vector2(newSize.x * 0.10, gy),
+      newSize.x - 60,
+    );
+
+    final rocks = children.query<RockComponent>();
+    for (final rock in rocks) {
+      if (rock.rockId == 'basalt') {
+        rock.position = Vector2(newSize.x * 0.35, gy);
+      } else if (rock.rockId == 'obsidian') {
+        rock.position = Vector2(newSize.x * 0.65, gy - 80);
+      }
+    }
   }
 
   // ═════════════════════════════════════════════════════════════════
@@ -154,10 +198,10 @@ class RockCycleGame extends FlameGame
     _addBackground();
 
     _spawnAutoRunRocks();
-    Player.groundY = groundY;
+    Player.groundY = runnerGroundY;
     player.resetForAutoRun(
-      Vector2(playerStartX, groundY),
-      size.x - 60, // levelEndX dinâmico = largura do canvas - margem
+      Vector2(runnerPlayerStartX, runnerGroundY),
+      runnerLevelEndX,
     );
   }
 
@@ -172,18 +216,20 @@ class RockCycleGame extends FlameGame
   }
 
   void _spawnAutoRunRocks() {
+    final gy = runnerGroundY;
+
     // Basalto — no chão, sem precisar pular
     add(RockComponent(
       rockName: 'Basalto',
       rockId: 'basalt',
-      position: Vector2(300, groundY),
+      position: Vector2(runnerBasaltX, gy),
       size: Vector2(30, 30),
     )..priority = 5);
     // Obsidiana — acima do chão (alcançável com um pulo), precisa pular
     add(RockComponent(
       rockName: 'Obsidiana',
       rockId: 'obsidian',
-      position: Vector2(600, groundY - 80),
+      position: Vector2(runnerObsidianX, gy - 80),
       size: Vector2(30, 30),
     )..priority = 5);
   }
