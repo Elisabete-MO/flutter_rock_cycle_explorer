@@ -24,6 +24,29 @@ class _LabOverlayState extends State<LabOverlay> {
       builder: (context, _) {
         final gs = widget.gameState;
 
+        final screenSize = MediaQuery.of(context).size;
+        final screenWidth = screenSize.width;
+        final screenHeight = screenSize.height;
+        final hasDialogue = gs.isDialogueActive;
+
+        // ── Tela compacta (mobile paisagem) ─────────────────────────
+        final isCompactLandscape =
+            screenWidth < 900 && screenWidth > screenHeight;
+
+        // ── Posição horizontal ──────────────────────────────────────
+        // Mobile:  percentual da largura para aproximar das bordas.
+        // Desktop: margem fixa igual à atual (60px).
+        final horizontalMargin = isCompactLandscape
+            ? screenWidth * 0.045
+            : 60.0;
+
+        // ── Posição vertical dos retratos ──────────────────────────
+        // Sem diálogo: retratos baixos, agrupados com o botão de ação.
+        // Com diálogo:  retratos sobem para não cobrir a caixa de fala.
+        final portraitBottom = hasDialogue
+            ? screenHeight * 0.33   // acima da caixa de diálogo
+            : 60.0;                  // rente ao botão de ação
+
         return Scaffold(
           backgroundColor: Colors.black,
           body: Stack(
@@ -45,20 +68,24 @@ class _LabOverlayState extends State<LabOverlay> {
               ),
 
               // ── Personagens ───────────────────────────────────────
-              Positioned(
-                left: 60,
-                bottom: 120,
-                child: _CharacterSprite(
-                  label: 'Dra. Terra',
-                  color: Colors.greenAccent,
-                ),
-              ),
-              Positioned(
-                right: 60,
-                bottom: 120,
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+                left: horizontalMargin,
+                bottom: portraitBottom,
                 child: _CharacterSprite(
                   label: 'Dra. Sophia',
-                  color: Colors.blueAccent,
+                  imagePath: 'imgs/characters/sophia_profile.png',
+                ),
+              ),
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+                right: horizontalMargin,
+                bottom: portraitBottom,
+                child: _CharacterSprite(
+                  label: 'Dra. Terra',
+                  imagePath: 'imgs/characters/dra_terra_profile.png',
                 ),
               ),
 
@@ -244,34 +271,73 @@ class _DiaryIconButtonState extends State<_DiaryIconButton>
   }
 }
 
-/// Placeholder visual para personagens no laboratório.
+/// Retrato responsivo dos personagens no laboratório com imagem, moldura e sombra.
+///
+/// O tamanho é calculado como 35% da altura da tela.
+/// Em mobile paisagem (<900px largura) o limite máximo é reduzido para 150px
+/// a fim de não ocupar espaço excessivo do laboratório.
 class _CharacterSprite extends StatelessWidget {
   final String label;
-  final Color color;
+  final String imagePath;
 
-  const _CharacterSprite({required this.label, required this.color});
+  const _CharacterSprite({required this.label, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
+    final isCompactLandscape =
+        screenWidth < 900 && screenWidth > screenHeight;
+    final avatarSize = isCompactLandscape
+        ? (screenHeight * 0.35).clamp(80.0, 150.0)
+        : (screenHeight * 0.35).clamp(100.0, 300.0);
+    final borderRadius = avatarSize * 0.12;
+    final labelFontSize = (avatarSize * 0.14).clamp(11.0, 16.0);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 64,
-          height: 64,
+          width: avatarSize,
+          height: avatarSize,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: color, width: 2),
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              // Sombra grande — destaca do fundo escuro do lab
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.90),
+                blurRadius: 48,
+                spreadRadius: 12,
+                offset: const Offset(0, 10),
+              ),
+              // Sombra densa — profundidade do card
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.80),
+                blurRadius: 20,
+                spreadRadius: 6,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-          child: Icon(Icons.person, color: color, size: 36),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                color: Colors.grey.shade800,
+                child: const Icon(Icons.person, color: Colors.white54),
+              ),
+            ),
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           label,
           style: TextStyle(
-            color: color,
-            fontSize: 12,
+            color: Colors.white,
+            fontSize: labelFontSize,
             fontWeight: FontWeight.w600,
             shadows: const [Shadow(color: Colors.black87, blurRadius: 4)],
           ),
