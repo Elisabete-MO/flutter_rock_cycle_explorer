@@ -49,15 +49,30 @@ class RockCycleGame extends FlameGame
 
   ui.Image? _vulcanImage;
   Future<ui.Image>? _vulcanFuture;
+  ui.Image? _basaltImage;
+  ui.Image? _obsidianImage;
+  Future<ui.Image>? _basaltFuture;
+  Future<ui.Image>? _obsidianFuture;
   SpriteComponent? _background;
 
-  RockCycleGame({required this.gameState});
+  RockCycleGame({required this.gameState}) {
+    // Flame 1.37 adiciona prefixo 'assets/images/' por padrão. Como todos os
+    // assets do projeto são declarados sem esse prefixo no pubspec.yaml,
+    // limpamos o prefixo para que os paths resolvam direto da raiz do Flutter.
+    images.prefix = '';
+  }
 
   @override
   Future<void> onLoad() async {
-    // ── Pré-carrega imagem de fundo (em background, não bloqueia o lab) ──
+    // ── Pré-carrega imagens (em background, não bloqueia o lab) ──────
     _vulcanFuture = images.load('imgs/bcgs/vulcan.png');
     _vulcanFuture!.then((img) => _vulcanImage = img);
+
+    _basaltFuture = images.load('imgs/icons/basalto_icon.png');
+    _basaltFuture!.then((img) => _basaltImage = img);
+
+    _obsidianFuture = images.load('imgs/icons/obsidian_icon.png');
+    _obsidianFuture!.then((img) => _obsidianImage = img);
 
     // ── Jogador ────────────────────────────────────────────────────
     // Posição inicial arbitrária (coberta pelo overlay do lab)
@@ -191,9 +206,15 @@ class RockCycleGame extends FlameGame
   Future<void> _startAutoRun() async {
     _cleanupAutoRun();
 
-    // Garante que o fundo foi carregado antes de montar a cena
+    // Garante que as imagens foram carregadas antes de montar a cena
     if (_vulcanImage == null && _vulcanFuture != null) {
       _vulcanImage = await _vulcanFuture;
+    }
+    if (_basaltImage == null && _basaltFuture != null) {
+      _basaltImage = await _basaltFuture;
+    }
+    if (_obsidianImage == null && _obsidianFuture != null) {
+      _obsidianImage = await _obsidianFuture;
     }
     _addBackground();
 
@@ -219,19 +240,25 @@ class RockCycleGame extends FlameGame
     final gy = runnerGroundY;
 
     // Basalto — no chão, sem precisar pular
-    add(RockComponent(
-      rockName: 'Basalto',
-      rockId: 'basalt',
-      position: Vector2(runnerBasaltX, gy),
-      size: Vector2(30, 30),
-    )..priority = 5);
+    if (_basaltImage != null) {
+      add(RockComponent(
+        rockName: 'Basalto',
+        rockId: 'basalt',
+        rockImage: _basaltImage!,
+        position: Vector2(runnerBasaltX, gy),
+        size: Vector2(44, 44),
+      )..priority = 5);
+    }
     // Obsidiana — acima do chão (alcançável com um pulo), precisa pular
-    add(RockComponent(
-      rockName: 'Obsidiana',
-      rockId: 'obsidian',
-      position: Vector2(runnerObsidianX, gy - 80),
-      size: Vector2(30, 30),
-    )..priority = 5);
+    if (_obsidianImage != null) {
+      add(RockComponent(
+        rockName: 'Obsidiana',
+        rockId: 'obsidian',
+        rockImage: _obsidianImage!,
+        position: Vector2(runnerObsidianX, gy - 80),
+        size: Vector2(44, 44),
+      )..priority = 5);
+    }
   }
 
   /// Remove componentes da corrida (fundo, rochas restantes).

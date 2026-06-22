@@ -38,7 +38,8 @@ class CollectionResultOverlay extends StatelessWidget {
                       : Colors.redAccent.withValues(alpha: 0.3),
                 ),
               ),
-              child: Column(
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // ── Ícone ────────────────────────────────────────
@@ -139,6 +140,7 @@ class CollectionResultOverlay extends StatelessWidget {
                 ],
               ),
             ),
+          ),
           ),
         );
       },

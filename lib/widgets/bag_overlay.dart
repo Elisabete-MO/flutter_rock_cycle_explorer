@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import '../game/rock_cycle_game.dart';
 import '../models/game_state.dart';
+import '../models/rock_model.dart';
 
 /// Bag de amostras coletadas.
 ///
-/// Lista apenas amostras pendentes de análise (fieldSamples).
-/// Mostra "Amostra #N" — sem nome, tipo ou descrição.
-/// Ao selecionar, inicia a análise e abre o microscópio.
+/// Exibe o fundo [bag.png] (bolsa aberta) com botões circulares das rochas
+/// posicionados na área interior da bolsa. Sem texto — apenas as fotos.
+/// Ao selecionar uma amostra, inicia a análise e abre o microscópio.
 class BagOverlay extends StatelessWidget {
   final GameState gameState;
   final RockCycleGame game;
@@ -26,61 +27,107 @@ class BagOverlay extends StatelessWidget {
         if (samples.isEmpty) return const SizedBox.shrink();
 
         return Scaffold(
-          backgroundColor: Colors.black87,
-          body: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Container(
-                width: 360,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            children: [
+              // ── Backdrop escuro ─────────────────────────────────
+              Container(color: Colors.black54),
+
+              // ── Cartão central da bolsa ─────────────────────────
+              Center(
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxWidth: 500,
+                    maxHeight: 360,
                   ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.backpack, color: Colors.amberAccent, size: 24),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Bag de Amostras',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFF6B8E4E),
+                      width: 2.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // ── Fundo: bolsa aberta ─────────────────────
+                      Image.asset(
+                        'imgs/bcgs/bag.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => Container(
+                          color: const Color(0xFF2C1810),
+                        ),
+                      ),
+
+                      // ── Botão fechar (X) — canto superior direito ──
+                      Positioned(
+                        top: 20,
+                        right: 20,
+                        child: Semantics(
+                          label: 'Fechar bolsa',
+                          button: true,
+                          child: SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => game.overlays.remove('bag'),
+                                borderRadius: BorderRadius.circular(22),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.4),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white70,
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Selecione uma amostra para analisar:',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 13,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...samples.asMap().entries.map(
-                      (e) => _SampleCard(
-                        index: e.key,
-                        sampleLabel: 'Amostra #${e.key + 1}',
-                        onTap: () {
-                          gameState.startAnalysis(e.value);
-                          game.openMicroscope();
-                        },
+
+                      // ── Botões das rochas — área da bolsa ──────
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 40),
+                          child: Wrap(
+                            spacing: 24,
+                            runSpacing: 24,
+                            alignment: WrapAlignment.center,
+                            children: samples.map(
+                              (rock) => _SampleCircle(
+                                rock: rock,
+                                onTap: () {
+                                  gameState.startAnalysis(rock);
+                                  game.openMicroscope();
+                                },
+                              ),
+                            ).toList(),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         );
       },
@@ -88,60 +135,75 @@ class BagOverlay extends StatelessWidget {
   }
 }
 
-class _SampleCard extends StatelessWidget {
-  final int index;
-  final String sampleLabel;
+/// Botão com formato irregular da rocha (transparência do PNG).
+class _SampleCircle extends StatelessWidget {
+  final RockModel rock;
   final VoidCallback onTap;
 
-  const _SampleCard({
-    required this.index,
-    required this.sampleLabel,
+  const _SampleCircle({
+    required this.rock,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    final iconPath = rock.iconAssetPath;
+    return SizedBox(
+      width: 110,
+      height: 110,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.grain,
-                  color: Colors.cyan.withValues(alpha: 0.6),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  sampleLabel,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // ── Sombra suave atrás da rocha ──────────────────────
+              if (iconPath != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 2, top: 2),
+                  child: Image.asset(
+                    iconPath,
+                    width: 96,
+                    height: 96,
+                    fit: BoxFit.contain,
+                    color: Colors.black.withValues(alpha: 0.3),
+                    colorBlendMode: BlendMode.srcIn,
                   ),
                 ),
-                const Spacer(),
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.white.withValues(alpha: 0.4),
-                ),
-              ],
-            ),
+              // ── Imagem real com bordas irregulares ────────────────
+              Padding(
+                padding: const EdgeInsets.all(4),
+                child: iconPath != null
+                    ? Image.asset(
+                        iconPath,
+                        width: 96,
+                        height: 96,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => _fallbackIcon(),
+                      )
+                    : _fallbackIcon(),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _fallbackIcon() {
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(36),
+      ),
+      child: const Icon(
+        Icons.grain,
+        color: Colors.white38,
+        size: 40,
       ),
     );
   }
