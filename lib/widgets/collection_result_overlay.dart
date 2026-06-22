@@ -112,8 +112,7 @@ class CollectionResultOverlay extends StatelessWidget {
                       if (success) {
                         game.returnToLab();
                       } else {
-                        gameState.resetCollection();
-                        game.closeLabAndStartExploration();
+                        game.retryAutoRun();
                       }
                     },
                     style: ElevatedButton.styleFrom(
