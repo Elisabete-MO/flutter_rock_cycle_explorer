@@ -27,9 +27,16 @@ class RockCycleGame extends FlameGame
   //  de valores fixos, garantindo funcionamento em mobile paisagem.
   // ═══════════════════════════════════════════════════════════════════
 
-  /// Altura do chão — percentual do canvas.
-  /// Alinha a base (pés) de Sophia à plataforma principal do background.
+  /// Altura do chão para as rochas — percentual do canvas (fixo 0.78).
+  /// As rochas não devem ser rebaixadas junto com o player.
   double get runnerGroundY => size.y * 0.78;
+
+  /// Altura do chão para o player — mais baixa que [runnerGroundY] para
+  /// alinhar os pés da Sophia com a plataforma rochosa do background.
+  double get runnerPlayerGroundY {
+    final isCompact = size.x < 900 && size.x > size.y;
+    return isCompact ? size.y * 1.02 : size.y * 1.04;
+  }
 
   /// Posição horizontal inicial da Sophia.
   double get runnerPlayerStartX => size.x * 0.10;
@@ -102,19 +109,23 @@ class RockCycleGame extends FlameGame
 
   /// Recalcula posições do jogador e das rochas após redimensionamento.
   void _repositionAutoRunElements(Vector2 newSize) {
-    final gy = newSize.y * 0.78;
-    Player.groundY = gy;
+    // Player: usa groundY rebaixado para alinhar com a plataforma
+    final isCompact = newSize.x < 900 && newSize.x > newSize.y;
+    final gyPlayer = isCompact ? newSize.y * 1.02 : newSize.y * 1.04;
+    Player.groundY = gyPlayer;
     player.resetForAutoRun(
-      Vector2(newSize.x * 0.10, gy),
+      Vector2(newSize.x * 0.10, gyPlayer),
       newSize.x - 60,
     );
 
+    // Rochas: mantêm o groundY original (não rebaixado)
+    final gyRocks = newSize.y * 0.78;
     final rocks = children.query<RockComponent>();
     for (final rock in rocks) {
       if (rock.rockId == 'basalt') {
-        rock.position = Vector2(newSize.x * 0.35, gy);
+        rock.position = Vector2(newSize.x * 0.35, gyRocks);
       } else if (rock.rockId == 'obsidian') {
-        rock.position = Vector2(newSize.x * 0.65, gy - 80);
+        rock.position = Vector2(newSize.x * 0.65, gyRocks - 80);
       }
     }
   }
@@ -236,9 +247,9 @@ class RockCycleGame extends FlameGame
     _addBackground();
 
     _spawnAutoRunRocks();
-    Player.groundY = runnerGroundY;
+    Player.groundY = runnerPlayerGroundY;
     player.resetForAutoRun(
-      Vector2(runnerPlayerStartX, runnerGroundY),
+      Vector2(runnerPlayerStartX, runnerPlayerGroundY),
       runnerLevelEndX,
     );
   }
