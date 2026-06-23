@@ -29,23 +29,32 @@ class _LabOverlayState extends State<LabOverlay> {
         final screenHeight = screenSize.height;
         final hasDialogue = gs.isDialogueActive;
 
-        // ── Tela compacta (mobile paisagem) ─────────────────────────
+        // ── Breakpoint: mobile paisagem vs. desktop ─────────────────
         final isCompactLandscape =
             screenWidth < 900 && screenWidth > screenHeight;
 
-        // ── Posição horizontal ──────────────────────────────────────
-        // Mobile:  percentual da largura para aproximar das bordas.
-        // Desktop: margem fixa igual à atual (60px).
-        final horizontalMargin = isCompactLandscape
-            ? screenWidth * 0.045
-            : 60.0;
+        // ── Layout dos retratos ────────────────────────────────────
+        // Dois modos explícitos:
+        //   compactLandscape — mobile/tablet paisagem (<900px largura)
+        //   desktopLayout    — desktop / responsivo computador
+        final double horizontalMargin;
+        final double portraitBottom;
 
-        // ── Posição vertical dos retratos ──────────────────────────
-        // Sem diálogo: retratos baixos, agrupados com o botão de ação.
-        // Com diálogo:  retratos sobem para não cobrir a caixa de fala.
-        final portraitBottom = hasDialogue
-            ? screenHeight * 0.33   // acima da caixa de diálogo
-            : 60.0;                  // rente ao botão de ação
+        if (isCompactLandscape) {
+          // Mobile paisagem:
+          //   - margem lateral estreita (retratos próximos das bordas)
+          //   - sem diálogo: retratos mais baixos, centro livre
+          //   - com diálogo: sobem para não cobrir caixa de fala
+          horizontalMargin = screenWidth * 0.045;
+          portraitBottom = hasDialogue ? screenHeight * 0.2 : 45.0;
+        } else {
+          // Desktop / responsivo computador:
+          //   - margem lateral fixa (posicionamento original)
+          //   - sem diálogo: rente ao botão de ação
+          //   - com diálogo: elevação moderada, sem subir demais
+          horizontalMargin = 60.0;
+          portraitBottom = hasDialogue ? screenHeight * 0.2 : 60.0;
+        }
 
         return Scaffold(
           backgroundColor: Colors.black,
