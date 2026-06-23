@@ -12,6 +12,7 @@ import 'widgets/field_book_overlay.dart';
 import 'widgets/hud_overlay.dart';
 import 'widgets/lab_overlay.dart';
 import 'widgets/landscape_guard.dart';
+import 'widgets/start_overlay.dart';
 import 'widgets/victory_overlay.dart';
 import 'package:flutter/foundation.dart';
 
@@ -45,6 +46,8 @@ Future<void> main() async {
         child: GameWidget(
           game: RockCycleGame(gameState: gameState),
           overlayBuilderMap: {
+            'start': (context, game) =>
+                StartOverlay(game: game as RockCycleGame),
             'hud': (context, game) => HudOverlay(gameState: gameState),
             'dialogue': (context, game) => DialogueOverlay(
               gameState: gameState,

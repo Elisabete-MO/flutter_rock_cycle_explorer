@@ -79,8 +79,8 @@ class RockCycleGame extends FlameGame
     player = Player()..position = size / 2;
     add(player);
 
-    // ── Inicia no laboratório ──────────────────────────────────────
-    showLab();
+    // ── Inicia na tela inicial ─────────────────────────────────────
+    showStartScreen();
   }
 
   /// Chamado pelo Flame quando o canvas é redimensionado ou a orientação
@@ -122,6 +122,23 @@ class RockCycleGame extends FlameGame
   // ═════════════════════════════════════════════════════════════════
   //  GERENCIAMENTO DE OVERLAYS / FASES
   // ═════════════════════════════════════════════════════════════════
+
+  /// Abre a tela inicial.
+  /// O overlay 'start' cobre todo o jogo Flame com o background de abertura.
+  void showStartScreen() {
+    overlays.remove('lab');
+    hideHud();
+    overlays.add('start');
+  }
+
+  /// Transiciona da tela inicial para o laboratório e inicia
+  /// automaticamente o diálogo inicial da Dra. Terra.
+  void startGame() {
+    overlays.remove('start');
+    showLab();
+    gameState.startInitialDialogue();
+    showDialogue();
+  }
 
   /// Abre o laboratório (tela estática, sem movimentação).
   /// O overlay 'lab' cobre todo o jogo Flame.
@@ -280,7 +297,7 @@ class RockCycleGame extends FlameGame
     gameState.setPhase(GamePhase.exploration);
   }
 
-  /// Restaura integralmente o estado e os componentes da primeira quest.
+  /// Restaura integralmente o estado e retorna à tela inicial.
   void restartAdventure() {
     _cleanupAutoRun();
     overlays.remove('victory');
@@ -289,10 +306,11 @@ class RockCycleGame extends FlameGame
     overlays.remove('analysis');
     overlays.remove('classification');
     overlays.remove('collectionResult');
+    overlays.remove('lab');
     hideHud();
     gameState.reset();
     player.position = size / 2;
-    showLab();
+    showStartScreen();
   }
 
   /// HUD
