@@ -3,6 +3,7 @@ import 'dart:ui' as ui show Image;
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import '../components/end_level_marker.dart';
 import '../components/player.dart';
 import '../components/rock_component.dart';
 import '../models/game_state.dart';
@@ -58,8 +59,10 @@ class RockCycleGame extends FlameGame
   Future<ui.Image>? _vulcanFuture;
   ui.Image? _basaltImage;
   ui.Image? _obsidianImage;
+  ui.Image? _endMarkerImage;
   Future<ui.Image>? _basaltFuture;
   Future<ui.Image>? _obsidianFuture;
+  Future<ui.Image>? _endMarkerFuture;
   SpriteComponent? _background;
 
   RockCycleGame({required this.gameState}) {
@@ -80,6 +83,9 @@ class RockCycleGame extends FlameGame
 
     _obsidianFuture = images.load('imgs/icons/obsidian_icon.png');
     _obsidianFuture!.then((img) => _obsidianImage = img);
+
+    _endMarkerFuture = images.load('imgs/icons/end_level_icon.png');
+    _endMarkerFuture!.then((img) => _endMarkerImage = img);
 
     // ── Jogador ────────────────────────────────────────────────────
     // Posição inicial arbitrária (coberta pelo overlay do lab)
@@ -127,6 +133,12 @@ class RockCycleGame extends FlameGame
       } else if (rock.rockId == 'obsidian') {
         rock.position = Vector2(newSize.x * 0.65, gyRocks - 80);
       }
+    }
+
+    // Marco final: reposiciona perto do fim da fase
+    final markers = children.query<EndLevelMarker>();
+    for (final marker in markers) {
+      marker.position = Vector2(newSize.x - 90, gyRocks);
     }
   }
 
@@ -244,9 +256,13 @@ class RockCycleGame extends FlameGame
     if (_obsidianImage == null && _obsidianFuture != null) {
       _obsidianImage = await _obsidianFuture;
     }
+    if (_endMarkerImage == null && _endMarkerFuture != null) {
+      _endMarkerImage = await _endMarkerFuture;
+    }
     _addBackground();
 
     _spawnAutoRunRocks();
+    _spawnEndMarker();
     Player.groundY = runnerPlayerGroundY;
     player.resetForAutoRun(
       Vector2(runnerPlayerStartX, runnerPlayerGroundY),
@@ -289,13 +305,30 @@ class RockCycleGame extends FlameGame
     }
   }
 
-  /// Remove componentes da corrida (fundo, rochas restantes).
+  /// Cria o marco visual de fim de fase próximo ao limite direito.
+  void _spawnEndMarker() {
+    if (_endMarkerImage == null) return;
+    final markerSize = Vector2(size.x * 0.05, size.y * 0.08);
+    final markerX = runnerLevelEndX - 30;
+    final markerY = runnerGroundY;
+    add(EndLevelMarker(
+      markerImage: _endMarkerImage!,
+      position: Vector2(markerX, markerY),
+      size: markerSize,
+    ));
+  }
+
+  /// Remove componentes da corrida (fundo, rochas, marco final).
   void _cleanupAutoRun() {
     _background?.removeFromParent();
     _background = null;
     final rocks = children.query<RockComponent>();
     for (final rock in rocks) {
       rock.removeFromParent();
+    }
+    final markers = children.query<EndLevelMarker>();
+    for (final marker in markers) {
+      marker.removeFromParent();
     }
   }
 
@@ -348,18 +381,10 @@ class RockCycleGame extends FlameGame
   }
 
   void _handleRockContact(RockComponent rock) {
-    // Coleta a rocha durante a exploração
+    // Coleta a rocha durante a exploração — sem encerrar a fase.
+    // O resultado só será exibido quando Sophia atingir o marco final.
     gameState.collectInField(rock.rockId);
-
-    // Remove do mundo (já coletada)
     rock.removeFromParent();
-
-    // Se todas as amostras foram coletadas, encerra a fase
-    if (gameState.hasCollectedAllRequired) {
-      player.stop();
-      gameState.finalizeCollection();
-      showCollectionResult();
-    }
   }
 
   /// Chamado pelo [Player] quando atinge o fim da pista.
