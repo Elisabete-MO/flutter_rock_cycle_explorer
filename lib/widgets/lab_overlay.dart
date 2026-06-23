@@ -46,7 +46,7 @@ class _LabOverlayState extends State<LabOverlay> {
           //   - sem diálogo: retratos mais baixos, centro livre
           //   - com diálogo: sobem para não cobrir caixa de fala
           horizontalMargin = screenWidth * 0.045;
-          portraitBottom = hasDialogue ? screenHeight * 0.2 : 45.0;
+          portraitBottom = hasDialogue ? screenHeight * 0.33 : 20.0;
         } else {
           // Desktop / responsivo computador:
           //   - margem lateral fixa (posicionamento original)
