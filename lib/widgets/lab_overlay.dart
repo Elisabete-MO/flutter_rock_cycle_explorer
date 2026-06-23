@@ -184,15 +184,8 @@ class _LabOverlayState extends State<LabOverlay> {
       );
     }
 
-    // ── Prioridade 3: Primeira vez (antes da apresentação) ─────────
-    return _ActionBtn(
-      icon: const Icon(Icons.chat),
-      label: 'Falar com Dra. Terra',
-      onTap: () {
-        gs.startInitialDialogue();
-        widget.game.showDialogue();
-      },
-    );
+    // ── Sem ação disponível (diálogo inicial roda automaticamente) ─
+    return const SizedBox.shrink();
   }
 
 }
