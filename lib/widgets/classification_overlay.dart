@@ -271,13 +271,15 @@ class _ClassificationOverlayState extends State<ClassificationOverlay> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Ícone de resultado ────────────────────────────────────
+        // ── Sophia ───────────────────────────────────────────────
         if (isCorrect) ...[
-          const Text(
-            '✨',
-            style: TextStyle(fontSize: 64),
+          Image.asset(
+            'imgs/characters/mov_sophia/sophia_happy.png',
+            height: (MediaQuery.of(context).size.height * 0.22)
+                .clamp(80.0, 150.0),
+            fit: BoxFit.contain,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
@@ -300,11 +302,13 @@ class _ClassificationOverlayState extends State<ClassificationOverlay> {
             style: TextStyle(color: Colors.white70, fontSize: 15),
           ),
         ] else ...[
-          const Text(
-            '😕',
-            style: TextStyle(fontSize: 64),
+          Image.asset(
+            'imgs/characters/mov_sophia/sophia_sad.png',
+            height: (MediaQuery.of(context).size.height * 0.22)
+                .clamp(80.0, 150.0),
+            fit: BoxFit.contain,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
