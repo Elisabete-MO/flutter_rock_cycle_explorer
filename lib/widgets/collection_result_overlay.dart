@@ -42,10 +42,14 @@ class CollectionResultOverlay extends StatelessWidget {
                 child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ── Ícone ────────────────────────────────────────
-                  Text(
-                    success ? '🎉' : '😔',
-                    style: const TextStyle(fontSize: 64),
+                  // ── Sophia ───────────────────────────────────────
+                  Image.asset(
+                    success
+                      ? 'imgs/characters/mov_sophia/sophia_happy.png'
+                      : 'imgs/characters/mov_sophia/sophia_sad.png',
+                    height: (MediaQuery.of(context).size.height * 0.35)
+                        .clamp(120.0, 260.0),
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 16),
 

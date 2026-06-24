@@ -42,10 +42,6 @@ class VictoryOverlay extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // ── Confete ──────────────────────────────────────
-                const Text('🎉🎊✨', style: TextStyle(fontSize: 48)),
-                const SizedBox(height: 20),
-
                 // ── Título ─────────────────────────────────────────
                 Text(
                   'Missão Cumprida!',
@@ -54,6 +50,15 @@ class VictoryOverlay extends StatelessWidget {
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+                const SizedBox(height: 12),
+
+                // ── Sophia ────────────────────────────────────────
+                Image.asset(
+                  'imgs/characters/mov_sophia/sophia_happy.png',
+                  height: (MediaQuery.of(context).size.height * 0.35)
+                      .clamp(120.0, 260.0),
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 12),
 
