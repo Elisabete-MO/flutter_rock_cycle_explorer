@@ -1,123 +1,106 @@
-<div align="center">
-  <h1>🪨 Rock Cycle Explorer</h1>
-  <p><em>Explore, colete e descubra os segredos geológicos da Terra em um RPG lúdico de aprendizagem.</em></p>
-</div>
+# 🪨 The Rock Keeper
 
----
+The Rock Keeper é um jogo educacional 2D sobre rochas e observação científica. A experiência combina exploração, coleta de amostras, análise visual e classificação para apresentar conceitos de geologia de forma interativa.
 
-## 📖 Sobre o Projeto
+> O nome público do jogo é **The Rock Keeper**. Alguns identificadores internos do projeto ainda usam o nome legado `rock_cycle_explorer`.
 
-**Rock Cycle Explorer** é um jogo educacional focado em ensinar os processos de formação e transformação das rochas. Desenvolvido com **Flutter** e **Flame Engine**, o jogo combina o dinamismo visual de um RPG top-down clássico de exploração com mecânicas interativas de aprendizado.
+## 📖 Objetivo pedagógico
 
-**Objetivo Educacional:** Proporcionar uma compreensão intuitiva do ciclo das rochas, diferenciando rochas ígneas, sedimentares e metamórficas através de pistas textuais e visuais.
-**Público-alvo:** Estudantes do ensino básico ao médio (11 a 15 anos) e qualquer entusiasta de ciências naturais.
+O jogo introduz conceitos básicos sobre rochas ígneas e vulcânicas por meio de um processo inspirado no trabalho científico: observar o ambiente, coletar amostras, analisar características, formular uma classificação e receber feedback.
 
----
+No arco atual, o jogador aprende a reconhecer Basalto e Obsidiana a partir de evidências como textura, cristais, camadas, fósseis, bandas e brilho vítreo.
 
-## 🎮 Gameplay
+## ⚙️ Status do MVP
 
-O núcleo do jogo baseia-se em um ciclo viciante e educativo (Core Loop):
+O MVP implementa a primeira quest de The Rock Keeper, ambientada no bioma do Vulcão. A missão acompanha a Dra. Sophia 👩‍🏫 na coleta, análise e catalogação de duas rochas vulcânicas:
 
-1. **Exploração:** O jogador (um geólogo de campo) navega por um mapa 2D top-down renderizado de forma fluida pela Flame Engine.
-2. **Coleta:** Interação com "nós geológicos" espalhados por biomas distintos (vulcão, cânion, cavernas).
-3. **Classificação:** Ao inspecionar uma rocha, o jogo entra na interface do "Laboratório de Campo". Através de um sistema de quiz interativo, o jogador analisa dicas físicas/visuais e classifica a amostra geológica.
-4. **Progresso:** Entregar as rochas classificadas corretamente aos NPCs gera Pontos de Experiência (XP) e completa missões (Quests) de mapeamento.
+- Basalto
+- Obsidiana
 
-> **O papel da Flame Engine:** A Flame é responsável pela lógica do mundo físico (renderização contínua, movimentação do jogador, colisões com paredes e NPCs), enquanto o Flutter cuida da interface gráfica interativa (overlays de quizzes, HUD, diálogos).
+O fluxo inclui tela inicial, laboratório, diálogos com a Dra. Terra, Diário de Campo, fase de coleta em formato auto-runner, microscópio, classificação, feedback pedagógico, progressão por XP e tela de vitória.
 
----
+## 🎮 Fluxo de jogo
 
-## ⚙️ Funcionalidades
+1. 🖥️ **Tela inicial:** o jogador inicia a aventura.
+2. 🔬 **Laboratório:** a Dra. Terra apresenta a missão à Dra. Sophia e libera o Diário de Campo.
+3. 🌋 **Coleta no Vulcão:** Sophia corre automaticamente pelo cenário; o jogador controla o pulo para coletar Basalto e Obsidiana antes do marco final.
+4. 🪨 **Resultado da coleta:** uma coleta completa concede XP e permite retornar ao laboratório; se faltar uma amostra, a fase pode ser repetida.
+5. 🎒 **Seleção da amostra:** no laboratório, a bolsa reúne as amostras disponíveis para análise.
+6. 🔍 **Microscópio:** o jogador observa a imagem, as características e as pistas da amostra selecionada.
+7. ⭐⭐⭐ **Classificação:** a amostra é classificada como ígnea, sedimentar ou metamórfica.
+8. 🎓 **Feedback:** a Dra. Terra explica o resultado e registra a descoberta no Diário de Campo.
+9. 📕 **Diário de Campo:** a seção de rochas vulcânicas reúne as amostras já analisadas; as demais categorias permanecem reservadas para missões futuras.
+10. 🎉 **Vitória:** após catalogar Basalto e Obsidiana, a quest é concluída, o jogador recebe XP e pode reiniciar a aventura pela tela de vitória.
 
-### 🔴 MVP (Disponível)
-- Movimentação 2D top-down (teclado/joystick).
-- Interação com nós de rocha e NPCs de missão (Dra. Terra).
-- Sistema de classificação (Quiz Geológico via Flutter Overlays).
-- Gerenciamento reativo de estado (Inventário e Quests).
-- Dados base estruturados (Basalto, Granito, Arenito, Calcário, Gneisse, Mármore).
+## 🛠️ Tecnologias e arquitetura
 
-### 🟢 Futuro (Planejado)
-- Suporte a mapas avançados em `.tmx` (Tiled).
-- Enciclopédia Interativa ("Caderno do Geólogo") desbloqueável.
-- Ciclo de dia/noite e efeitos climáticos.
-- Minijogo físico de fusão e metamorfismo (submeter rochas a alta pressão in-game).
+- **Flutter:** aplicação, telas e overlays de interface.
+- **Flame:** loop do jogo, auto-runner, componentes, colisões e coleta.
+- **Dart:** linguagem do projeto.
+- **ChangeNotifier:** estado de inventário, XP, quest, diálogos e progresso em `GameState`.
 
----
+O MVP tem como alvos principais a Web e dispositivos móveis Android/iOS. A interface exige orientação paisagem: em telas móveis, o aplicativo solicita essa orientação e bloqueia o gameplay enquanto o dispositivo estiver em modo retrato.
 
-## 🛠️ Tecnologias e Arquitetura
+## 🚀 Como executar
 
-- **[Flutter](https://flutter.dev/):** Utilizado para todo o envelopamento do jogo, gerenciamento de estado nativo (`ChangeNotifier`) e construção das interfaces de usuário sobrepostas (Overlays de HUD, Quizzes e Diálogos).
-- **[Flame Engine](https://flame-engine.org/):** Game engine modular baseada em Flutter. Gerencia o `FlameGame` loop, Component System (FCS), física básica e inputs de movimentação.
-- **Dart:** Linguagem primária.
+Pré-requisitos:
 
-A arquitetura do projeto segue o padrão híbrido **Flame-First**, onde a engine processa o mundo, e o Flutter sobrepõe a UI de negócios educacionais.
+- Flutter SDK compatível com o projeto.
+- Chrome para execução Web ou um dispositivo/emulador móvel configurado.
 
----
+Instale as dependências:
 
-## 📁 Estrutura do Projeto
-
-O código está organizado de forma clara para separar a lógica da engine 2D das regras de negócio do aplicativo móvel:
-
-```
-lib/
-├── main.dart               # Ponto de entrada e configuração do GameWidget / Overlays
-├── game/                   # Domínio restrito à Flame Engine
-│   ├── rock_cycle_game.dart# Classe principal do loop do jogo
-│   └── components/         # Entidades do jogo (Player, Rochas, NPCs, Obstáculos)
-├── models/                 # Regras de negócio e dados do Flutter
-│   ├── rock_model.dart     # Banco de dados de dicas geológicas
-│   └── game_state.dart     # Estado global (Inventário, XP, Quests) usando ChangeNotifier
-└── widgets/                # Interfaces de UI interativas (Overlays Flutter)
-    ├── hud_overlay.dart    # Inventário rápido
-    ├── dialogue_overlay.dart
-    └── quiz_overlay.dart   # Formulário de classificação da rocha
-```
-
----
-
-## 🚀 Como Executar Localmente
-
-O projeto é multiplataforma e suporta execução em Linux, Web, Android, iOS, macOS e Windows.
-
-**Pré-requisitos:**
-Ter o [Flutter SDK](https://docs.flutter.dev/get-started/install) atualizado instalado na sua máquina.
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/SEU_USUARIO/rock_cycle_explorer.git
-cd rock_cycle_explorer
-```
-
-2. Instale as dependências (incluindo a Flame Engine):
 ```bash
 flutter pub get
 ```
 
-3. Execute o projeto (no Linux, por exemplo):
+Execute no Chrome:
+
 ```bash
-flutter run -d linux
-# Para rodar no navegador: flutter run -d chrome
+flutter run -d chrome
 ```
 
----
+Para executar em um dispositivo móvel conectado, consulte os dispositivos disponíveis e use o identificador desejado:
 
-## 🎨 Estilo e Proposta Visual
+```bash
+flutter devices
+flutter run -d <device_id>
+```
 
-O jogo foge do clichê de "aplicativos educacionais estáticos" adotando uma estética de **expedição científica premium**.
-- **Cores:** Tons terrosos, minerais ricos (cinza ardósia, basalto), laranjas vulcânicos e ocres sedimentares.
-- **Identidade:** Interfaces limpas, textos didáticos legíveis e um clima pacífico focado em curiosidade e descoberta ambiental, reminiscente de explorações de laboratório de campo.
+## 🧪 Como testar
 
----
+Execute a análise estática e os testes automatizados:
 
-## 🤝 Como Contribuir
+```bash
+flutter analyze --no-fatal-infos
+flutter test
+```
 
-Contribuições são muito bem-vindas, especialmente para adicionar novas rochas ao catálogo ou aprimorar os assets visuais!
+## 📁 Estrutura do projeto
 
-1. Faça o Fork deste repositório.
-2. Crie sua branch de funcionalidade (`git checkout -b feat/nova-rocha-obsidiana`).
-3. Commit suas alterações (`git commit -m 'feat: adiciona rocha obsidiana e dicas'`).
-4. Envie para a branch origin (`git push origin feat/nova-rocha-obsidiana`).
-5. Abra um Pull Request detalhando sua adição.
+```text
+lib/
+├── main.dart       # Bootstrap do aplicativo e registro dos overlays
+├── game/           # Loop principal e transições entre fases
+├── components/     # Sophia, rochas coletáveis e marco de fim da fase
+├── models/         # Estado do jogo e catálogo de rochas
+└── widgets/        # Tela inicial, laboratório, diálogos, diário e demais overlays
+imgs/               # Assets visuais do jogo
+test/               # Testes de estado e widgets
+```
 
----
-*Feito com propósito educacional acadêmico por um dev em constante evolução de Flutter e Flame.*
+## 🎨 Assets
+
+Os assets principais estão organizados em `imgs/` e incluem:
+
+- backgrounds da tela inicial, laboratório, Vulcão, microscópio, bolsa e diário;
+- personagens e animações da Dra. Sophia, além do retrato da Dra. Terra;
+- imagens e ícones de Basalto e Obsidiana;
+- botões, ícone do Diário de Campo e marcador de fim da fase.
+
+## 🧭 Escopo atual
+
+- O MVP cobre somente a primeira quest, com o Vulcão como primeiro arco jogável.
+- Basalto e Obsidiana são as amostras efetivamente usadas nessa quest.
+- O Diário de Campo já apresenta as categorias vulcânicas, sedimentares e metamórficas, mas somente a seção vulcânica possui conteúdo jogável no arco atual.
+- A progressão completa por múltiplos biomas e novas quests é uma evolução futura, não uma funcionalidade já disponível.
