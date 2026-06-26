@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flame/game.dart';
 import 'game/rock_cycle_game.dart';
 import 'models/game_state.dart';
+import 'services/audio_service.dart';
 import 'widgets/analysis_overlay.dart';
 import 'widgets/bag_overlay.dart';
 import 'widgets/classification_overlay.dart';
@@ -38,13 +39,14 @@ Future<void> main() async {
   };
 
   final gameState = GameState();
+  final audioService = AudioService();
 
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       home: LandscapeGuard(
         child: GameWidget(
-          game: RockCycleGame(gameState: gameState),
+          game: RockCycleGame(gameState: gameState, audioService: audioService),
           overlayBuilderMap: {
             'start': (context, game) =>
                 StartOverlay(game: game as RockCycleGame),
