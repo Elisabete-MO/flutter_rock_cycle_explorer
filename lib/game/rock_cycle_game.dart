@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui show Image;
 
 import 'package:flame/components.dart';
@@ -7,6 +8,7 @@ import '../components/end_level_marker.dart';
 import '../components/player.dart';
 import '../components/rock_component.dart';
 import '../models/game_state.dart';
+import '../services/audio_service.dart';
 
 /// Loop principal do Rock Cycle Explorer.
 ///
@@ -19,6 +21,7 @@ import '../models/game_state.dart';
 class RockCycleGame extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
   final GameState gameState;
+  final AudioService audioService;
 
   late final Player player;
 
@@ -65,7 +68,7 @@ class RockCycleGame extends FlameGame
   Future<ui.Image>? _endMarkerFuture;
   SpriteComponent? _background;
 
-  RockCycleGame({required this.gameState}) {
+  RockCycleGame({required this.gameState, required this.audioService}) {
     // Flame 1.37 adiciona prefixo 'assets/images/' por padrão. Como todos os
     // assets do projeto são declarados sem esse prefixo no pubspec.yaml,
     // limpamos o prefixo para que os paths resolvam direto da raiz do Flutter.
@@ -74,6 +77,9 @@ class RockCycleGame extends FlameGame
 
   @override
   Future<void> onLoad() async {
+    // ── Inicializa áudio (defensivo, não bloqueia o jogo) ─────────
+    await audioService.init();
+
     // ── Pré-carrega imagens (em background, não bloqueia o lab) ──────
     _vulcanFuture = images.load('imgs/bcgs/vulcan.png');
     _vulcanFuture!.then((img) => _vulcanImage = img);
@@ -148,15 +154,19 @@ class RockCycleGame extends FlameGame
 
   /// Abre a tela inicial.
   /// O overlay 'start' cobre todo o jogo Flame com o background de abertura.
+  /// Tenta tocar a música de abertura (pode falhar no Web se autoplay estiver
+  /// bloqueado — o áudio é seguro e não quebra o jogo).
   void showStartScreen() {
     overlays.remove('lab');
     hideHud();
     overlays.add('start');
+    unawaited(audioService.playOpeningTheme());
   }
 
   /// Transiciona da tela inicial para o laboratório e inicia
   /// automaticamente o diálogo inicial da Dra. Terra.
   void startGame() {
+    unawaited(audioService.stopOpeningTheme());
     overlays.remove('start');
     showLab();
     gameState.startInitialDialogue();
@@ -177,15 +187,22 @@ class RockCycleGame extends FlameGame
     await _startAutoRun();
     showHud();
     gameState.setPhase(GamePhase.exploration);
+    unawaited(audioService.playVolcanoAmbience());
   }
 
   /// Mostra o overlay de resultado da coleta.
   void showCollectionResult() {
+    if (gameState.hasCollectedAllRequired) {
+      unawaited(audioService.playWin());
+    } else {
+      unawaited(audioService.playFail());
+    }
     overlays.add('collectionResult');
   }
 
   /// Volta ao laboratório após a coleta.
   void returnToLab() {
+    unawaited(audioService.stopVolcanoAmbience());
     _cleanupAutoRun();
     overlays.remove('collectionResult');
     showLab();
@@ -195,6 +212,7 @@ class RockCycleGame extends FlameGame
 
   /// Abre a Bag de amostras (dentro do laboratório).
   void showBag() {
+    unawaited(audioService.playBag());
     overlays.add('bag');
   }
 
@@ -226,10 +244,12 @@ class RockCycleGame extends FlameGame
     overlays.remove('lab');
     overlays.remove('dialogue');
     overlays.add('victory');
+    unawaited(audioService.playWin());
   }
 
   /// Abre o Diário de Campo.
   void showFieldBook() {
+    unawaited(audioService.playBag());
     overlays.add('fieldBook');
   }
 
@@ -334,15 +354,18 @@ class RockCycleGame extends FlameGame
 
   /// Reinicia a fase de corrida (usado pelo botão "Tentar Novamente").
   Future<void> retryAutoRun() async {
+    unawaited(audioService.stopVolcanoAmbience());
     overlays.remove('collectionResult');
     gameState.resetCollection();
     await _startAutoRun();
     showHud();
     gameState.setPhase(GamePhase.exploration);
+    unawaited(audioService.playVolcanoAmbience());
   }
 
   /// Restaura integralmente o estado e retorna à tela inicial.
   void restartAdventure() {
+    unawaited(audioService.stopAll());
     _cleanupAutoRun();
     overlays.remove('victory');
     overlays.remove('dialogue');
@@ -385,6 +408,7 @@ class RockCycleGame extends FlameGame
     // O resultado só será exibido quando Sophia atingir o marco final.
     gameState.collectInField(rock.rockId);
     rock.removeFromParent();
+    unawaited(audioService.playCollect());
   }
 
   /// Chamado pelo [Player] quando atinge o fim da pista.

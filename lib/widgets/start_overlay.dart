@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../game/rock_cycle_game.dart';
 
@@ -59,7 +60,10 @@ class StartOverlay extends StatelessWidget {
                 key: const Key('start_button'),
                 width: buttonWidth,
                 height: buttonHeight,
-                onTap: () => game.startGame(),
+                onTap: () {
+                  unawaited(game.audioService.playClick());
+                  game.startGame();
+                },
               ),
             ),
           ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../game/rock_cycle_game.dart';
 import '../models/game_state.dart';
@@ -50,6 +51,12 @@ class _ClassificationOverlayState extends State<ClassificationOverlay> {
     if (sample == null) return;
 
     final correct = widget.gameState.classifyCurrentSample(type);
+    // Toca som de acerto/erro (seguro, não quebra o jogo)
+    if (correct) {
+      unawaited(widget.game.audioService.playWin());
+    } else {
+      unawaited(widget.game.audioService.playFail());
+    }
     setState(() {
       _selectedType = type;
       _state = correct
